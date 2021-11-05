@@ -9,15 +9,12 @@ const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
-    children: [
-      {
-        path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
-        name: 'Dashboard',
-        meta: { title: '仪表盘', icon: 'dashboard', affix: true },
-      },
-    ],
+  },
+  {
+    path: '/change',
+    component: () => import('@/views/change/Change'),
+    name: 'Dashboard',
+    meta: { title: '仪表盘', icon: 'dashboard', affix: true },
   },
   {
     path: '/test',
@@ -25,6 +22,7 @@ const routes = [
     name: 'Dashboard',
     meta: { title: '仪表盘', icon: 'dashboard', affix: true },
   },
+
 ]
 
 const router = new VueRouter({

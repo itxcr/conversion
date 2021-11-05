@@ -1,6 +1,7 @@
 <template>
-  <div class='dashboard-container'>
+  <div style='position: absolute;left: 0;top: 0;'>
     首页
+    <el-button @click="$router.go(-1)">返回</el-button>
   </div>
 </template>
 

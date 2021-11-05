@@ -1,7 +1,9 @@
 <template>
   <div>
     <el-container>
-      <el-header>Header</el-header>
+      <el-header>
+        <el-button @click="$router.push('/change')">测试</el-button>
+      </el-header>
       <el-main>
         <el-button @click="$router.push('/test')">测试</el-button>
       </el-main>

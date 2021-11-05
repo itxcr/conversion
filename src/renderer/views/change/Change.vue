@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <about />
+    <el-button @click="$router.go(-1)">返回</el-button>
     <div>
       <input type="text" v-model="lng" />
     </div>
