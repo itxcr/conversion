@@ -8,18 +8,22 @@
     border-radius: 0;
     background-color: transparent;
     -webkit-app-region: no-drag;
+
     .layout_tools_ico {
       opacity: .6;
     }
+
     &:hover,
       //&:focus,
     &:active {
       background-color: #092b91;
       border: none;
+
       .layout_tools_ico {
         opacity: 1;
       }
     }
+
     &.layout_close {
       &:hover,
         //&:focus,
@@ -29,7 +33,8 @@
     }
   }
 }
-$laout-list: refresh,lists,minimize,maximize,restore,close;
+
+$laout-list: refresh, lists, minimize, maximize, restore, close;
 .layout_tools_ico {
   &:before {
     content: '';
@@ -56,6 +61,7 @@ $laout-list: refresh,lists,minimize,maximize,restore,close;
 .el-checkbox.small {
   .el-checkbox__label {
     font-size: 12px;
+
     a {
       color: #1c4ddf;
     }
