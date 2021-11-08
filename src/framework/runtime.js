@@ -5,7 +5,6 @@ class Runtime {
 
   static version() {
     return this.packageInfo().version
-
   }
 }
 

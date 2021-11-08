@@ -1,2 +1,58 @@
+body, html, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f1f2f3;
+  user-select: none;
+  cursor: default;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select, button {
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+
+button:focus {
+  outline: none;
+}
+
+.el-table__fixed, .el-table__fixed-right {
+  padding-bottom: 8px;
+}
+
+
 @import "ui-icon";
 @import "layout";
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.pull-left {
+  float: left;
+}
+
+.pull-right {
+  float: right;
+}
+
+.p-mb-15 {
+  margin-bottom: 15px;
+}
+
+.p-mb-5 {
+  margin-bottom: 5px;
+}
+
+.user-text {
+  user-select: text;
+}

@@ -20,8 +20,8 @@ if (!gotTheLock) {
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    minHeight: 680,
-    minWidth: 960,
+    minHeight: 720,
+    minWidth: 1020,
     frame: false,
     webPreferences: {
       nodeIntegration: true,

@@ -11,6 +11,9 @@ const routes = [
     path: '/main',
     name: 'main',
     component: require('@/views/Main').default,
+    meta: {
+      menuActive: 1,
+    },
   },
 ]
 

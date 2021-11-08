@@ -951,6 +951,11 @@
     dir-compare "^2.4.0"
     fs-extra "^9.0.1"
 
+"@fortawesome/fontawesome-free@^5.15.4":
+  version "5.15.4"
+  resolved "https://registry.nlark.com/@fortawesome/fontawesome-free/download/@fortawesome/fontawesome-free-5.15.4.tgz#ecda5712b61ac852c760d8b3c79c96adca5554e5"
+  integrity sha1-7NpXErYayFLHYNizx5yWrcpVVOU=
+
 "@gar/promisify@^1.0.1":
   version "1.1.2"
   resolved "https://registry.nlark.com/@gar/promisify/download/@gar/promisify-1.1.2.tgz?cache=0&sync_timestamp=1629999882087&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40gar%2Fpromisify%2Fdownload%2F%40gar%2Fpromisify-1.1.2.tgz#30aa825f11d438671d585bd44e7fd564535fc210"
