@@ -7,6 +7,7 @@ function resolve(dir) {
 module.exports = {
   pluginOptions: {
     electronBuilder: {
+      nodeIntegration: true,
       mainProcessFile: 'src/main/background.js',
       builderOptions: {
         appId: 'com.xcr.conversion',

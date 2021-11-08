@@ -2,27 +2,16 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 Vue.use(VueRouter)
-
-import Layout from '@/layout'
-
+const VueRouterPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push (to) {
+  return VueRouterPush.call(this, to).catch(err => err)
+}
 const routes = [
   {
-    path: '/',
-    component: Layout,
+    path: '/main',
+    name: 'main',
+    component: require('@/views/Main').default,
   },
-  {
-    path: '/change',
-    component: () => import('@/views/change/Change'),
-    name: 'Dashboard',
-    meta: { title: '仪表盘', icon: 'dashboard', affix: true },
-  },
-  {
-    path: '/test',
-    component: () => import('@/views/dashboard/index'),
-    name: 'Dashboard',
-    meta: { title: '仪表盘', icon: 'dashboard', affix: true },
-  },
-
 ]
 
 const router = new VueRouter({
