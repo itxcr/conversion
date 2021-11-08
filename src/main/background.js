@@ -11,6 +11,12 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
 ])
 
+const gotTheLock = app.requestSingleInstanceLock();
+// 单例锁，防止打开多个软件
+if (!gotTheLock) {
+  app.quit();
+}
+
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
