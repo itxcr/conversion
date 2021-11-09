@@ -1,9 +1,9 @@
 <template>
   <lay-out>
-    <el-aside width='420px' class='left-aside'>
+    <el-aside width='360px' class='left-aside'>
       <div class='custom-flex'>
         <el-input v-model='value' placeholder='请输入内容' style='margin-right: 30px;'></el-input>
-        <el-button type='plain' icon='el-icon-position' circle size='mini' @click='pd'></el-button>
+        <el-button type='plain' icon='el-icon-position' circle size='mini' @click='dw'></el-button>
       </div>
       <div style='margin-top: 20px;user-select: text'>
         <el-table
@@ -11,25 +11,32 @@
           border
           style='width: 100%'>
           <el-table-column
-            prop='name'
+            prop='title'
             label='小区'
+            align='center'
           >
           </el-table-column>
           <el-table-column
-            prop='lng'
-            label='经度'
+            prop='address'
+            label='地址'
+            align='center'
           >
           </el-table-column>
           <el-table-column
-            prop='lat'
-            label='纬度'>
+            label='坐标'
+            align='center'
+          >
+            <template slot-scope='{row}'>
+              经度: {{ row.point.lng }}
+              <br />
+              纬度: {{ row.point.lat }}
+            </template>
           </el-table-column>
         </el-table>
       </div>
     </el-aside>
     <el-main>
-      <el-button type='plain' icon='el-icon-refresh-left' circle size='mini' @click='refresh'></el-button>
-      <div id='container' style='width:100%;height:90%;margin-top: 20px;'></div>
+      <div id='container' style='width:100%;height:100%;'></div>
     </el-main>
   </lay-out>
 </template>
@@ -37,7 +44,7 @@
 <script>
 import LayOut from '@/components/LayOut'
 import { Conversion } from '../../framework/utils'
-import { logger } from '../../framework/logging'
+import axios from 'axios'
 
 export default {
   name: 'Main',
@@ -45,39 +52,10 @@ export default {
   components: { LayOut },
   data() {
     return {
-      value: '',
-      patter: /['省'|'市'|'区'|'县']$/,
+      value: '航空科技大厦',
       map: null,
       coordinatesList: [],
-      tableData: [
-        {
-          name: '瑞丽园',
-          lng: '117.141278',
-          lat: '39.115441',
-        },
-        {
-          name: '瑞丽园',
-          lng: '117.141278',
-          lat: '39.115441',
-        },
-      ],
-      geojson: {
-        'type': 'FeatureCollection',
-        'features': [
-          {
-            'type': 'Feature',
-            'properties': {},
-            'geometry': {
-              'type': 'Polygon',
-              'coordinates': [
-                [
-                  [1, 2],
-                ],
-              ],
-            },
-          },
-        ],
-      },
+      tableData: [],
     }
   },
   mounted() {
@@ -85,130 +63,100 @@ export default {
       enableRotate: false,
       enableTilt: false,
     })
-    this.tableData[0].lng = Conversion.BaiduToWgs84(117.141278, 39.115441)[0]
-    this.tableData[0].lat = Conversion.BaiduToWgs84(117.141278, 39.115441)[1]
-    // this.map.centerAndZoom('天津市津南区惠安花园', 15)
-    this.map.centerAndZoom(new BMap.Point(117.141278, 39.115441), 18)
+    // this.map.centerAndZoom('航空科技大厦', 15)
+    // this.map.centerAndZoom(new BMap.Point(117.141278, 39.115441), 18)
     this.map.enableScrollWheelZoom(true)
+    this.dw()
   },
   methods: {
     //定位区域，小地名，使用本地检索方法
     dw() {
-      var local = new BMap.LocalSearch(this.map, {
+      this.coordinatesList = []
+      const local = new BMap.LocalSearch(this.map, {
         renderOptions: { map: this.map },
       })
-      local.setMarkersSetCallback(function(pois) {
-        console.log(pois)
-        //清除所有覆盖物后，在叠加第一个点
-        this.map.clearOverlays()
-        for (var i = 0; i < pois.length; i++) {
-          var marker = new BMap.Marker(pois[i].point)
-          this.map.addOverlay(marker)
+      local.setMarkersSetCallback((poi) => {
+        console.log(poi, '获取poi')
+        if (poi.length !== 0) {
+          this.tableData = poi
+          //清除所有覆盖物后，在叠加第一个点
+          this.map.clearOverlays()
+          for (let i = 0; i < poi.length; i++) {
+            const marker = new BMap.Marker(poi[i].point)
+            this.map.addOverlay(marker)
+          }
+          //根据获取到的poi id，查询边界坐标集合，画多边形
+          const { uid, title } = poi[0]
+          this.queryUid(uid, title)
         }
-        //根据获取到的poi id，查询边界坐标集合，画多边形
-        var uid = pois[0].uid
-        queryUid(uid)
       })
-      local.search(value)
+      local.search(this.value)
       this.map.clearOverlays()
     },
     //获取小区信息
-    queryUid(uid) {
-      let url1 = 'http://map.baidu.com/?pcevaname=pc4.1&qt=ext&ext_ver=new&l=12&uid=' + uid
-      let url2 = `http://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
-      $.ajax({
-        async: false,
-        url: url2,
-        dataType: 'jsonp',
-        jsonp: 'callback',
-        success: function(result) {
-          content = result.content
-          if (null != content.geo && content.geo != undefined) {
-            var geo = content.geo
-            var points = this.coordinateToPoints(geo)
-
-            //point分组，得到多边形的每一个点，画多边形
-            if (points && points.indexOf(';') >= 0) {
-              points = points.split(';')
-            }
-            var arr = []
-            console.log(points)
-            for (var i = 0; i < points.length - 1; i++) {
-              var temp = points[i].split(',')
-              arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
-              coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
-            }
-
-            var polygon = new BMap.Polygon(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5 })  //创建多边形
-            map.addOverlay(polygon)   //增加多边形
-            //生成kml并下载
-            console.log(coordinatesList)
-            geojson.features[0].geometry.coordinates[0].push(coordinatesList)
-            downKml(geojson)
-          }
-        },
-        timeout: 3000,
-      })
-    },
-    //获取边界
-    getBoundary() {
-      var bdary = new BMap.Boundary()
-      bdary.get(value, function(rs) {       //获取行政区域
-        this.map.clearOverlays()        //清除地图覆盖物
-        var count = rs.boundaries.length //行政区域的点有多少个
-        for (var i = 0; i < count; i++) {
-          var ply = new BMap.Polygon(rs.boundaries[i], {
-            strokeWeight: 1,
-            strokeColor: '#ff0000',
-          }) //建立多边形覆盖物
-          this.map.addOverlay(ply)  //添加覆盖物
-          this.map.setViewport(ply.getPath())    //调整视野
+    async queryUid(uid, title) {
+      let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
+      const result = await axios.get(url)
+      console.log('通过搜索到的第一个uid 获取边界', title)
+      let content = result.data.content
+      if (content.hasOwnProperty('geo') && content.geo) {
+        const geo = content.geo
+        let points = this.coordinateToPoints(geo)
+        console.log(points, 7)
+        if (points && points.indexOf(';') >= 0) {
+          points = points.split(';')
+          points.pop()
         }
-      })
-    },
-    //正则表达式，满足条件后调用
-    pd() {
-      if (this.patter.test(this.value) == true) {//关键字结尾是省市县区就调用下面方法
-        this.getBoundary()
-        if (/社区|小区$/.test(this.value) == true) {//因为区后面结尾，会有小区和社区，即做了一个字方法
-          this.dw()
+        const arr = []
+        for (let i = 0; i < points.length; i++) {
+          const temp = points[i].split(',')
+          arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
+          this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
         }
-      } else {//关键字结尾没有省市县区结尾就调用此方法
-        this.dw()
+        const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5 })  //创建多边形
+        this.map.addOverlay(polygon)
+        this.map.setViewport(polygon.getPath())
+        return console.log(this.coordinatesList, 8)
       }
+      this.map.clearOverlays()
+      this.$message.error(`搜索内容  ${this.value}  无范围可获取`)
     },
     //坐标转换
     coordinateToPoints(coordinate) {
-      console.log(coordinate)
-      var points = ''
+      let points = ''
       if (coordinate) {
-        var projection = BMAP_NORMAL_MAP.getProjection()
-
+        const projection = BMAP_NORMAL_MAP.getProjection()
+        console.log(coordinate, '坐标转换1, 通过 uid 获取 geo')
+        console.log(projection, '坐标转换2  BMAP_NORMAL_MAP.getProjection')
         if (coordinate && coordinate.indexOf('-') >= 0) {
           coordinate = coordinate.split('-')
+          console.log(coordinate, '坐标转换3 coordinate.split(\'-\')')
         }
         //取点集合
-        var tempco = coordinate[1]
+        let tempco = coordinate[1]
+        console.log(tempco, 'tempco')
         if (tempco && tempco.indexOf(',') >= 0) {
           tempco = tempco.replace(';', '').split(',')
+          console.log(tempco, '4')
         }
         //分割点，两个一组，组成百度米制坐标
-        var temppoints = []
-        for (var i = 0, len = tempco.length; i < len; i++) {
-          var obj = new Object()
+        const temppoints = []
+        for (let i = 0, len = tempco.length; i < len; i++) {
+          const obj = new Object()
           obj.lng = tempco[i]
           obj.lat = tempco[i + 1]
           temppoints.push(obj)
           i++
         }
+        console.log(temppoints, '5')
         //遍历米制坐标，转换为经纬度
-        for (var i = 0, len = temppoints.length; i < len; i++) {
-          //var pos = coordinate[i].split(',');
-          var pos = temppoints[i]
-          var point = projection.pointToLngLat(new BMap.Pixel(pos.lng, pos.lat))
+        for (let i = 0, len = temppoints.length; i < len; i++) {
+          const pos = temppoints[i]
+          const point = projection.pointToLngLat(new BMap.Pixel(pos.lng, pos.lat))
           points += ([point.lng, point.lat].toString() + ';')
         }
       }
+      console.log(points, '6')
       return points
     },
     refresh() {

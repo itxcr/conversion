@@ -33,12 +33,12 @@
             </el-menu-item>
           </router-link>
 
-          <router-link to='/export'>
-            <el-menu-item index='2'>
-              <i class="fas fa-file-export"></i>
-              <span slot='title'>导出kml</span>
-            </el-menu-item>
-          </router-link>
+          <!--          <router-link to='/export'>-->
+          <!--            <el-menu-item index='2'>-->
+          <!--              <i class="fas fa-file-export"></i>-->
+          <!--              <span slot='title'>导出kml</span>-->
+          <!--            </el-menu-item>-->
+          <!--          </router-link>-->
         </el-menu>
       </div>
       <slot></slot>

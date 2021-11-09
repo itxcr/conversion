@@ -5,7 +5,6 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 import { ipcMain } from 'electron'
-import { logger } from '../framework/logging'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
@@ -14,7 +13,6 @@ protocol.registerSchemesAsPrivileged([
 const gotTheLock = app.requestSingleInstanceLock()
 // 单例锁，防止打开多个软件
 if (!gotTheLock) {
-  logger.error('实例已经打开，退出')
   app.quit()
 }
 
