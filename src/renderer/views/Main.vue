@@ -119,7 +119,7 @@ export default {
         return console.log(this.coordinatesList, 8)
       }
       this.map.clearOverlays()
-      this.$message.error(`搜索内容  ${this.value}  无范围可获取`)
+      this.$message.error(`${this.value}  无范围可获取`)
     },
     //坐标转换
     coordinateToPoints(coordinate) {
