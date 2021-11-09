@@ -28,11 +28,17 @@
         >
           <router-link to='/main'>
             <el-menu-item index='1'>
-              <i class="fas fa-map-marked-alt"></i>
-              <span slot='title'>小区范围</span>
+              <i class='fas fa-map-marked-alt'></i>
+              <span slot='title'>百度地图</span>
             </el-menu-item>
           </router-link>
 
+          <router-link to='/export'>
+            <el-menu-item index='2'>
+              <i class="fas fa-file-export"></i>
+              <span slot='title'>导出kml</span>
+            </el-menu-item>
+          </router-link>
         </el-menu>
       </div>
       <slot></slot>

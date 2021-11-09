@@ -56,3 +56,9 @@ button:focus {
 .user-text {
   user-select: text;
 }
+
+.custom-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
