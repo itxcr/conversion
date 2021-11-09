@@ -1,11 +1,11 @@
 <template>
   <lay-out>
     <el-aside width='360px' class='left-aside'>
-      <div class='custom-flex'>
+      <div class='custom-flex' style='position: fixed;z-index: 2;width: 300px;height: 40px'>
         <el-input v-model='value' placeholder='请输入内容' style='margin-right: 30px;'></el-input>
         <el-button type='plain' icon='el-icon-position' circle size='mini' @click='dw'></el-button>
       </div>
-      <div style='margin-top: 20px;user-select: text'>
+      <div style='user-select: text;margin-top: 60px;'>
         <el-table
           :data='tableData'
           border
