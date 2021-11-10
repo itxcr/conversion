@@ -17,26 +17,8 @@
           :data='tableData'
           border
         >
-          <!--          <el-table-column-->
-          <!--            prop='title'-->
-          <!--            label='小区'-->
-          <!--            align='center'-->
-          <!--          >-->
-          <!--          </el-table-column>-->
-          <!--          <el-table-column-->
-          <!--            prop='address'-->
-          <!--            label='地址'-->
-          <!--            align='center'-->
-          <!--          >-->
-          <!--          </el-table-column>-->
-          <!--          <el-table-column-->
-          <!--            label='目标小区'-->
-          <!--            align='center'-->
-          <!--            prop='title'-->
-          <!--          >-->
-          <!--          </el-table-column>-->
           <el-table-column
-            label='区域范围'
+            label='搜索目标范围坐标(WGS-84)'
             align='center'
           >
             <template slot-scope='{row}'>
@@ -74,12 +56,7 @@ export default {
     }
   },
   mounted() {
-    this.map = new BMap.Map('container', {
-      enableRotate: false,
-      enableTilt: false,
-    })
-    // this.map.centerAndZoom('航空科技大厦', 15)
-    // this.map.centerAndZoom(new BMap.Point(117.141278, 39.115441), 18)
+    this.map = new BMap.Map('container')
     this.map.enableScrollWheelZoom(true)
     this.dw()
   },
@@ -91,6 +68,7 @@ export default {
       const local = new BMap.LocalSearch(this.map, {
         renderOptions: { map: this.map },
       })
+
       local.search(this.value)
       local.setMarkersSetCallback((poi) => {
         console.log(poi, '获取poi')
