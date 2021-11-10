@@ -1,35 +1,46 @@
 <template>
   <lay-out>
-    <el-aside width='360px' class='left-aside'>
-      <div class='custom-flex' style='position: fixed;z-index: 2;width: 300px;height: 40px'>
-        <el-input v-model='value' placeholder='请输入内容' style='margin-right: 30px;'></el-input>
-        <el-button type='plain' icon='el-icon-position' circle size='mini' @click='dw'></el-button>
+    <el-aside width='310px' class='left-aside'>
+      <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
+        <el-input v-model='value' placeholder='请输入内容' style='margin-right: 14px;'></el-input>
+        <el-tooltip effect='dark' content='定位小区' placement='top-start'>
+          <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='dw'></el-button>
+        </el-tooltip>
+        <el-tooltip class='item' effect='dark' content='导出文件' placement='top-start'>
+          <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='dw'></el-button>
+        </el-tooltip>
       </div>
-      <div style='user-select: text;margin-top: 60px;'>
+      <div style='user-select: text;margin-top: 80px;'>
         <el-table
           :data='tableData'
           border
-          style='width: 100%'>
+        >
+          <!--          <el-table-column-->
+          <!--            prop='title'-->
+          <!--            label='小区'-->
+          <!--            align='center'-->
+          <!--          >-->
+          <!--          </el-table-column>-->
+          <!--          <el-table-column-->
+          <!--            prop='address'-->
+          <!--            label='地址'-->
+          <!--            align='center'-->
+          <!--          >-->
+          <!--          </el-table-column>-->
           <el-table-column
+            label='目标小区'
+            align='center'
             prop='title'
-            label='小区'
-            align='center'
           >
           </el-table-column>
           <el-table-column
-            prop='address'
-            label='地址'
-            align='center'
-          >
-          </el-table-column>
-          <el-table-column
-            label='坐标'
+            label='区域范围'
             align='center'
           >
             <template slot-scope='{row}'>
-              经度: {{ row.point.lng }}
+              经度: {{ row.lng }}
               <br />
-              纬度: {{ row.point.lat }}
+              纬度: {{ row.lat }}
             </template>
           </el-table-column>
         </el-table>
@@ -71,27 +82,27 @@ export default {
   methods: {
     //定位区域，小地名，使用本地检索方法
     dw() {
+      this.map.clearOverlays()
       this.coordinatesList = []
       const local = new BMap.LocalSearch(this.map, {
         renderOptions: { map: this.map },
       })
+      local.search(this.value)
       local.setMarkersSetCallback((poi) => {
         console.log(poi, '获取poi')
         if (poi.length !== 0) {
-          this.tableData = poi
-          //清除所有覆盖物后，在叠加第一个点
           this.map.clearOverlays()
-          for (let i = 0; i < poi.length; i++) {
-            const marker = new BMap.Marker(poi[i].point)
-            this.map.addOverlay(marker)
-          }
+          //清除所有覆盖物后，在叠加第一个点
+          // this.map.clearOverlays()
+          // for (let i = 0; i < poi.length; i++) {
+          //   const marker = new BMap.Marker(poi[i].point)
+          //   this.map.addOverlay(marker)
+          // }
           //根据获取到的poi id，查询边界坐标集合，画多边形
           const { uid, title } = poi[0]
           this.queryUid(uid, title)
         }
       })
-      local.search(this.value)
-      this.map.clearOverlays()
     },
     //获取小区信息
     async queryUid(uid, title) {
@@ -116,9 +127,16 @@ export default {
         const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5 })  //创建多边形
         this.map.addOverlay(polygon)
         this.map.setViewport(polygon.getPath())
-        return console.log(this.coordinatesList, 8)
+        return this.tableData = this.coordinatesList.map(item => {
+          return {
+            lng: item[0],
+            lat: item[1],
+            title,
+          }
+        })
       }
       this.map.clearOverlays()
+      this.tableData = null
       this.$message.error(`${this.value}  无范围可获取`)
     },
     //坐标转换
@@ -167,5 +185,8 @@ export default {
 </script>
 
 <style scoped lang='scss'>
-
+::-webkit-scrollbar {
+  /*隐藏滚轮*/
+  display: none;
+}
 </style>
