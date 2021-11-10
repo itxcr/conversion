@@ -2,7 +2,7 @@
   <lay-out>
     <el-aside width='310px' class='left-aside'>
       <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
-        <el-input v-model.trim='value' placeholder='请输入内容' style='margin-right: 14px;'></el-input>
+        <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 14px;' />
         <el-tooltip effect='dark' content='定位小区' placement='top-start'>
           <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='dw'
                      :disabled='value.length===0' />
@@ -114,6 +114,7 @@ export default {
     async queryUid(uid, title) {
       try {
         let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
+        // let url1 = 'http://map.baidu.com/?pcevaname=pc4.1&qt=ext&ext_ver=new&l=12&uid=' + uid;
         let arr = []
         this.coordinatesList = []
         const result = await axios.get(url)
