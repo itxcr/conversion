@@ -64,7 +64,6 @@ async function createWindow() {
 
   ipcMain.handle('exportSingleFile', async (event, args) => {
     const { title, geo } = JSON.parse(args)
-    console.log(title)
     const { canceled, filePath } = await dialog.showSaveDialog({
       defaultPath: title,
       filters: [{
@@ -74,18 +73,16 @@ async function createWindow() {
     })
     console.log(geo)
     if (!canceled) {
-      const data = [
+      let data = [
         {
+          name: title,
           polygon: [geo],
         },
       ]
-      console.log(data)
-
-
-      const geoJson = GeoJson.parse(data, { 'Polygon': 'polygon' })
-      console.log(toKml(geoJson))
+      const geoJson = GeoJson.parse(data, { 'LineString': 'line', 'Polygon': 'polygon', include: ['name'] })
+      console.log(geoJson)
       await fs.writeFile(filePath, toKml(geoJson), () => {
-        console.log('成功')
+        console.log('生成kml文件成功')
       })
 
       // await fs.writeFile(filePath, geo, () => {
@@ -100,8 +97,9 @@ async function createWindow() {
       // await fs.writeFile(filePath, '111',() => {
       //   console.log('成功')
       // })
+      return true
     }
-    return true
+    return false
   })
 }
 

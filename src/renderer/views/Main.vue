@@ -70,7 +70,7 @@ export default {
       map: null,
       coordinatesList: [],
       tableData: [],
-      kml: []
+      kml: [],
     }
   },
   mounted() {
@@ -133,7 +133,6 @@ export default {
             this.kml.push(convert)
             this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
           }
-
           const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
           this.map.addOverlay(polygon)
           this.map.setViewport(polygon.getPath())
@@ -190,10 +189,23 @@ export default {
       return points
     },
     async exportFile() {
-      const result = await ipcRenderer.invoke('exportSingleFile', JSON.stringify({
-        title: this.value,
-        geo: this.kml,
-      }))
+      try {
+        const result = await ipcRenderer.invoke('exportSingleFile', JSON.stringify({
+          title: this.value,
+          geo: this.kml,
+        }))
+        console.log(result)
+        if (result) {
+          this.value = ''
+          this.tableData = []
+          return this.$message.success('导出成功')
+        }
+        this.$message.error('导出失败')
+      } catch (e) {
+        this.$message.error('导出失败')
+      } finally {
+        this.kml = []
+      }
     },
     refresh() {
       this.reload()
