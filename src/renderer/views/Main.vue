@@ -29,12 +29,12 @@
           <!--            align='center'-->
           <!--          >-->
           <!--          </el-table-column>-->
-          <el-table-column
-            label='目标小区'
-            align='center'
-            prop='title'
-          >
-          </el-table-column>
+          <!--          <el-table-column-->
+          <!--            label='目标小区'-->
+          <!--            align='center'-->
+          <!--            prop='title'-->
+          <!--          >-->
+          <!--          </el-table-column>-->
           <el-table-column
             label='区域范围'
             align='center'
@@ -70,6 +70,7 @@ export default {
       map: null,
       coordinatesList: [],
       tableData: [],
+      kml: []
     }
   },
   mounted() {
@@ -127,22 +128,21 @@ export default {
           console.log(points, 7)
           for (let i = 0; i < points.length - 1; i++) {
             let temp = points[i].split(',')
+            let convert = Conversion.BaiduToWgs84(temp[0], temp[1])
             arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
+            this.kml.push(convert)
             this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
           }
 
           const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
           this.map.addOverlay(polygon)
           this.map.setViewport(polygon.getPath())
-
-          this.tableData = this.coordinatesList.map(item => {
+          return this.tableData = this.coordinatesList.map(item => {
             return {
               lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
               lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
-              title,
             }
           })
-          return console.log(this.tableData, '这是table DATA')
         }
         this.map.clearOverlays()
         this.tableData = []
@@ -189,8 +189,11 @@ export default {
       console.log(points, '6')
       return points
     },
-    exportFile() {
-      ipcRenderer.invoke('exportSingleFile', this.value)
+    async exportFile() {
+      const result = await ipcRenderer.invoke('exportSingleFile', JSON.stringify({
+        title: this.value,
+        geo: this.kml,
+      }))
     },
     refresh() {
       this.reload()

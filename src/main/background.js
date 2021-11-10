@@ -5,8 +5,10 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 import { ipcMain } from 'electron'
-import { rootPath } from 'electron-root-path'
-import path from 'path'
+import fs from 'fs'
+import GeoJson from 'geojson'
+import toKml from 'tokml'
+
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
 ])
@@ -61,12 +63,46 @@ async function createWindow() {
   })
 
   ipcMain.handle('exportSingleFile', async (event, args) => {
-    console.log(args)
-    console.log(path.resolve(rootPath, '百度导出kml'))
-    // const res =     await dialog.showSaveDialog({title: '导出mkl', defaultPath: })
-    // console.log(res )
-  })
+    const { title, geo } = JSON.parse(args)
+    console.log(title)
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      defaultPath: title,
+      filters: [{
+        name: 'kml格式文件',
+        extensions: ['kml'],
+      }],
+    })
+    console.log(geo)
+    if (!canceled) {
+      const data = [
+        {
+          polygon: [geo],
+        },
+      ]
+      console.log(data)
 
+
+      const geoJson = GeoJson.parse(data, { 'Polygon': 'polygon' })
+      console.log(toKml(geoJson))
+      await fs.writeFile(filePath, toKml(geoJson), () => {
+        console.log('成功')
+      })
+
+      // await fs.writeFile(filePath, geo, () => {
+      //   console.log('成功')
+      // })
+      // fs.stat(filePath, (err, stats) => {
+      //   if(!stats) {
+      //     console.log(filePath)
+      //   }
+      //   console.log(stats)
+      // })
+      // await fs.writeFile(filePath, '111',() => {
+      //   console.log('成功')
+      // })
+    }
+    return true
+  })
 }
 
 // Quit when all windows are closed.
