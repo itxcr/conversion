@@ -104,48 +104,52 @@ export default {
           //根据获取到的poi id，查询边界坐标集合，画多边形
           const { uid, title } = poi[0]
           return this.queryUid(uid, title)
-        }else {
+        } else {
           return this.$message.error('输入内容获取不到，请检查！')
         }
       })
     },
     //获取小区信息
     async queryUid(uid, title) {
-      let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
-      let arr = []
-      this.coordinatesList = []
-      const result = await axios.get(url)
-      console.log('通过搜索到的第一个uid 获取边界', title)
-      let content = result.data.content
-      if (content.hasOwnProperty('geo') && content.geo) {
-        const geo = content.geo
-        let points = this.coordinateToPoints(geo)
-        if (points && points.indexOf(';') >= 0) {
-          points = points.split(';')
-        }
-        console.log(points, 7)
-        for (let i = 0; i < points.length - 1; i++) {
-          let temp = points[i].split(',')
-          arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
-          this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
-        }
-
-        const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
-        this.map.addOverlay(polygon)
-        this.map.setViewport(polygon.getPath())
-
-        this.tableData = this.coordinatesList.map(item => {
-          return {
-            lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
-            lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
-            title,
+      try {
+        let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
+        let arr = []
+        this.coordinatesList = []
+        const result = await axios.get(url)
+        console.log('通过搜索到的第一个uid 获取边界', title)
+        let content = result.data.content
+        if (content.hasOwnProperty('geo') && content.geo) {
+          const geo = content.geo
+          let points = this.coordinateToPoints(geo)
+          if (points && points.indexOf(';') >= 0) {
+            points = points.split(';')
           }
-        })
-        return console.log(this.tableData, '这是table DATA')
+          console.log(points, 7)
+          for (let i = 0; i < points.length - 1; i++) {
+            let temp = points[i].split(',')
+            arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
+            this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
+          }
+
+          const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
+          this.map.addOverlay(polygon)
+          this.map.setViewport(polygon.getPath())
+
+          this.tableData = this.coordinatesList.map(item => {
+            return {
+              lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
+              lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
+              title,
+            }
+          })
+          return console.log(this.tableData, '这是table DATA')
+        }
+        this.map.clearOverlays()
+        this.tableData = []
+        this.$message.error(`${this.value}  无范围可获取`)
+      } catch (e) {
+        this.$message.error(`百度接口请求失败`)
       }
-      this.map.clearOverlays()
-      this.tableData = []
-      this.$message.error(`${this.value}  无范围可获取`)
     },
     //坐标转换
     coordinateToPoints(coordinate) {
