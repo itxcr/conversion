@@ -1,11 +1,12 @@
 'use strict'
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 import { ipcMain } from 'electron'
-
+import { rootPath } from 'electron-root-path'
+import path from 'path'
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
 ])
@@ -58,6 +59,14 @@ async function createWindow() {
   ipcMain.handle('window.destroy', async () => {
     win.destroy()
   })
+
+  ipcMain.handle('exportSingleFile', async (event, args) => {
+    console.log(args)
+    console.log(path.resolve(rootPath, '百度导出kml'))
+    // const res =     await dialog.showSaveDialog({title: '导出mkl', defaultPath: })
+    // console.log(res )
+  })
+
 }
 
 // Quit when all windows are closed.

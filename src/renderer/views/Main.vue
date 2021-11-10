@@ -2,12 +2,14 @@
   <lay-out>
     <el-aside width='310px' class='left-aside'>
       <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
-        <el-input v-model='value' placeholder='请输入内容' style='margin-right: 14px;'></el-input>
+        <el-input v-model.trim='value' placeholder='请输入内容' style='margin-right: 14px;'></el-input>
         <el-tooltip effect='dark' content='定位小区' placement='top-start'>
-          <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='dw'></el-button>
+          <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='dw'
+                     :disabled='value.length===0' />
         </el-tooltip>
         <el-tooltip class='item' effect='dark' content='导出文件' placement='top-start'>
-          <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='dw'></el-button>
+          <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='exportFile'
+                     :disabled='tableData.length===0' />
         </el-tooltip>
       </div>
       <div style='user-select: text;margin-top: 80px;'>
@@ -53,6 +55,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import LayOut from '@/components/LayOut'
 import { Conversion } from '../../framework/utils'
 import axios from 'axios'
@@ -100,43 +103,48 @@ export default {
           // }
           //根据获取到的poi id，查询边界坐标集合，画多边形
           const { uid, title } = poi[0]
-          this.queryUid(uid, title)
+          return this.queryUid(uid, title)
+        }else {
+          return this.$message.error('输入内容获取不到，请检查！')
         }
       })
     },
     //获取小区信息
     async queryUid(uid, title) {
-      let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
+      let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
+      let arr = []
+      this.coordinatesList = []
       const result = await axios.get(url)
       console.log('通过搜索到的第一个uid 获取边界', title)
       let content = result.data.content
       if (content.hasOwnProperty('geo') && content.geo) {
         const geo = content.geo
         let points = this.coordinateToPoints(geo)
-        console.log(points, 7)
         if (points && points.indexOf(';') >= 0) {
           points = points.split(';')
-          points.pop()
         }
-        const arr = []
-        for (let i = 0; i < points.length; i++) {
-          const temp = points[i].split(',')
+        console.log(points, 7)
+        for (let i = 0; i < points.length - 1; i++) {
+          let temp = points[i].split(',')
           arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
           this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
         }
-        const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5 })  //创建多边形
+
+        const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
         this.map.addOverlay(polygon)
         this.map.setViewport(polygon.getPath())
-        return this.tableData = this.coordinatesList.map(item => {
+
+        this.tableData = this.coordinatesList.map(item => {
           return {
-            lng: item[0],
-            lat: item[1],
+            lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
+            lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
             title,
           }
         })
+        return console.log(this.tableData, '这是table DATA')
       }
       this.map.clearOverlays()
-      this.tableData = null
+      this.tableData = []
       this.$message.error(`${this.value}  无范围可获取`)
     },
     //坐标转换
@@ -176,6 +184,9 @@ export default {
       }
       console.log(points, '6')
       return points
+    },
+    exportFile() {
+      ipcRenderer.invoke('exportSingleFile', this.value)
     },
     refresh() {
       this.reload()
