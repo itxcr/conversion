@@ -184,8 +184,6 @@ export default {
         this.$message.error('导出失败')
       } catch (e) {
         this.$message.error('导出失败')
-      } finally {
-        this.kml = []
       }
     },
     refresh() {
