@@ -1,5 +1,5 @@
 'use strict'
-import { app, protocol, BrowserWindow, dialog, session } from 'electron'
+import { app, protocol, BrowserWindow, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
@@ -124,14 +124,6 @@ app.on('activate', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  const cookie = { url: 'https://localhost:8080', name: 'dummy_name', value: '', secure: true,  sameSite: 'unspecified'}
-  session.defaultSession.cookies.set(cookie)
-    .then(() => {
-      // success
-    }, (error) => {
-      console.error(error)
-    })
-  console.log(cookie)
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
