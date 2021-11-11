@@ -124,11 +124,12 @@ export default {
             }
           })
         }
-        this.map.clearOverlays()
-        this.tableData = []
         this.$message.error(`${this.value}  无范围可获取`)
       } catch (e) {
         this.$message.error(`百度接口请求失败`)
+      } finally {
+        this.map.clearOverlays()
+        this.tableData = []
       }
     },
     //坐标转换
@@ -152,8 +153,8 @@ export default {
         const temppoints = []
         for (let i = 0, len = tempco.length; i < len; i++) {
           const obj = new Object()
-          obj.lng = parseFloat(tempco[i])
-          obj.lat = parseFloat(tempco[i + 1])
+          obj.lng = tempco[i]
+          obj.lat = tempco[i + 1]
           temppoints.push(obj)
           i++
         }
