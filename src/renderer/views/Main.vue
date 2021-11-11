@@ -48,7 +48,7 @@ export default {
   components: { LayOut },
   data() {
     return {
-      value: '航空科技大厦',
+      value: '北京朝阳航空科技大厦',
       map: null,
       coordinatesList: [],
       tableData: [],
@@ -71,7 +71,7 @@ export default {
 
       local.search(this.value)
       local.setMarkersSetCallback((poi) => {
-        console.log(poi, '获取poi')
+        // console.log(poi, '获取poi')
         if (poi.length !== 0) {
           this.map.clearOverlays()
           //清除所有覆盖物后，在叠加第一个点
@@ -90,13 +90,14 @@ export default {
     },
     //获取小区信息
     async queryUid(uid, title) {
+      this.kml = []
       try {
         let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
         // let url1 = 'http://map.baidu.com/?pcevaname=pc4.1&qt=ext&ext_ver=new&l=12&uid=' + uid;
         let arr = []
         this.coordinatesList = []
         const result = await axios.get(url)
-        console.log('通过搜索到的第一个uid 获取边界', title)
+        // console.log('通过搜索到的第一个uid 获取边界', title)
         let content = result.data.content
         if (content.hasOwnProperty('geo') && content.geo) {
           const geo = content.geo
@@ -104,9 +105,10 @@ export default {
           if (points && points.indexOf(';') >= 0) {
             points = points.split(';')
           }
-          console.log(points, 7)
+          // console.log(points, 7)
           for (let i = 0; i < points.length - 1; i++) {
             let temp = points[i].split(',')
+            console.log(temp, 1)
             let convert = Conversion.BaiduToWgs84(temp[0], temp[1])
             arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
             this.kml.push(convert)
@@ -134,29 +136,29 @@ export default {
       let points = ''
       if (coordinate) {
         const projection = BMAP_NORMAL_MAP.getProjection()
-        console.log(coordinate, '坐标转换1, 通过 uid 获取 geo')
-        console.log(projection, '坐标转换2  BMAP_NORMAL_MAP.getProjection')
+        // console.log(coordinate, '坐标转换1, 通过 uid 获取 geo')
+        // console.log(projection, '坐标转换2  BMAP_NORMAL_MAP.getProjection')
         if (coordinate && coordinate.indexOf('-') >= 0) {
           coordinate = coordinate.split('-')
-          console.log(coordinate, '坐标转换3 coordinate.split(\'-\')')
+          // console.log(coordinate, '坐标转换3 coordinate.split(\'-\')')
         }
         //取点集合
         let tempco = coordinate[1]
-        console.log(tempco, 'tempco')
+        // console.log(tempco, 'tempco')
         if (tempco && tempco.indexOf(',') >= 0) {
           tempco = tempco.replace(';', '').split(',')
-          console.log(tempco, '4')
         }
         //分割点，两个一组，组成百度米制坐标
         const temppoints = []
         for (let i = 0, len = tempco.length; i < len; i++) {
           const obj = new Object()
-          obj.lng = tempco[i]
-          obj.lat = tempco[i + 1]
+          obj.lng = parseFloat(tempco[i])
+          obj.lat = parseFloat(tempco[i + 1])
           temppoints.push(obj)
           i++
         }
-        console.log(temppoints, '5')
+        // console.log(temppoints, 4)
+        // console.log(temppoints, '5')
         //遍历米制坐标，转换为经纬度
         for (let i = 0, len = temppoints.length; i < len; i++) {
           const pos = temppoints[i]
@@ -164,7 +166,7 @@ export default {
           points += ([point.lng, point.lat].toString() + ';')
         }
       }
-      console.log(points, '6')
+      // console.log(points, '6')
       return points
     },
     async exportFile() {
@@ -173,7 +175,7 @@ export default {
           title: this.value,
           geo: this.kml,
         }))
-        console.log(result)
+        // console.log(result)
         if (result) {
           this.value = ''
           this.tableData = []
