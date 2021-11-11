@@ -108,7 +108,6 @@ export default {
           // console.log(points, 7)
           for (let i = 0; i < points.length - 1; i++) {
             let temp = points[i].split(',')
-            console.log(temp, 1)
             let convert = Conversion.BaiduToWgs84(temp[0], temp[1])
             arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
             this.kml.push(convert)
@@ -124,12 +123,11 @@ export default {
             }
           })
         }
+        this.map.clearOverlays()
+        this.tableData = []
         this.$message.error(`${this.value}  无范围可获取`)
       } catch (e) {
         this.$message.error(`百度接口请求失败`)
-      } finally {
-        this.map.clearOverlays()
-        this.tableData = []
       }
     },
     //坐标转换
@@ -180,6 +178,7 @@ export default {
         if (result) {
           this.value = ''
           this.tableData = []
+          this.map.clearOverlays()
           return this.$message.success('导出成功')
         }
         this.$message.error('导出失败')
