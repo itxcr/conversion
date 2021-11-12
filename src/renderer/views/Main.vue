@@ -1,27 +1,41 @@
 <template>
   <lay-out>
-    <el-aside width='310px' class='left-aside'>
+    <el-aside width='300px' class='left-aside'>
       <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
-        <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 14px;' />
+        <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 10px;' />
         <el-tooltip effect='dark' content='定位小区' placement='top-start'>
           <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='dw'
                      :disabled='value.length===0' />
         </el-tooltip>
-        <el-tooltip class='item' effect='dark' content='导出文件' placement='top-start'>
+        <el-tooltip effect='dark' content='导出文件' placement='top-start'>
           <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='exportFile'
                      :disabled='tableData.length===0' />
         </el-tooltip>
       </div>
       <div style='user-select: text;margin-top: 80px;'>
+        <!--        <DynamicScroller-->
+        <!--          :items=tableData-->
+        <!--          :min-item-size='70'-->
+        <!--          class='scroller'>-->
+        <!--          <template v-slot='{ item}'>-->
+        <!--            经度: {{ item.lng }}-->
+        <!--            <br />-->
+        <!--            维度: {{ item.lat }}-->
+        <!--            &lt;!&ndash;            <DynamicScrollerItem&ndash;&gt;-->
+        <!--            &lt;!&ndash;            >&ndash;&gt;-->
+        <!--            &lt;!&ndash;              {{ JSON.stringify(item) }}&ndash;&gt;-->
+        <!--            &lt;!&ndash;              &lt;!&ndash;              <div class='text'>{{ item.size }}</div>&ndash;&gt;&ndash;&gt;-->
+        <!--            &lt;!&ndash;            </DynamicScrollerItem>&ndash;&gt;-->
+        <!--          </template>-->
+        <!--        </DynamicScroller>-->
+
         <el-table
-          :data='tableData'
-          border
+          :data='tableData' border
         >
           <el-table-column
             label='搜索目标范围坐标(WGS-84)'
-            align='center'
           >
-            <template slot-scope='{row}'>
+            <template v-slot='{row}'>
               经度: {{ row.lng }}
               <br />
               纬度: {{ row.lat }}
@@ -41,6 +55,7 @@ import { ipcRenderer } from 'electron'
 import LayOut from '@/components/LayOut'
 import { Conversion } from '../../framework/utils'
 import axios from 'axios'
+import { v4 as uuidV4 } from 'uuid'
 
 export default {
   name: 'Main',
@@ -119,10 +134,12 @@ export default {
           this.map.setViewport(polygon.getPath())
           return this.tableData = this.coordinatesList.map(item => {
             return {
+              id: uuidV4(),
               lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
               lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
             }
           })
+          console.log(this.tableData)
         }
         this.map.clearOverlays()
         this.tableData = []
@@ -198,5 +215,8 @@ export default {
 ::-webkit-scrollbar {
   /*隐藏滚轮*/
   display: none;
+}
+.el-input {
+  width: 200px;
 }
 </style>

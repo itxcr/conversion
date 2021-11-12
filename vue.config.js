@@ -34,8 +34,8 @@ module.exports = {
           installerIcon: 'public/favicon.ico',// 安装图标
           uninstallerIcon: 'public/favicon.ico',//卸载图标
           installerHeaderIcon: 'public/favicon.ico', // 安装时头部图标
-          createDesktopShortcut: true, // 创建桌面图标
-          createStartMenuShortcut: true,// 创建开始菜单图标
+          createDesktopShortcut: false, // 创建桌面图标
+          createStartMenuShortcut: false,// 创建开始菜单图标
         },
       },
     },
