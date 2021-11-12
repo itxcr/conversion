@@ -59,6 +59,7 @@ export default {
     this.map = new BMap.Map('container')
     this.map.enableScrollWheelZoom(true)
     this.dw()
+    console.log(this.$config)
   },
   methods: {
     //定位区域，小地名，使用本地检索方法

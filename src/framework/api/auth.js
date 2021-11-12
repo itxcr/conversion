@@ -1,0 +1,7 @@
+class Auth {
+
+}
+
+export {
+  Auth
+}

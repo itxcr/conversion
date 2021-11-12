@@ -46,6 +46,7 @@ module.exports = {
       resolve: {
         alias: {
           '@': resolve('src/renderer'),
+          '@framework': resolve('src/framework'),
         },
       },
     }

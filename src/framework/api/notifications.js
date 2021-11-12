@@ -1,0 +1,7 @@
+class Notifications {
+
+}
+
+export {
+  Notifications,
+}
