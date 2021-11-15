@@ -30,7 +30,9 @@
         <!--        </DynamicScroller>-->
 
         <el-table
-          :data='tableData' border
+          :data='tableData'
+          border
+          max-height='400'
         >
           <el-table-column
             label='搜索目标范围坐标(WGS-84)'
@@ -108,12 +110,12 @@ export default {
     async queryUid(uid, title) {
       this.kml = []
       try {
-        let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=5`
+        let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
         // let url1 = 'http://map.baidu.com/?pcevaname=pc4.1&qt=ext&ext_ver=new&l=12&uid=' + uid;
         let arr = []
         this.coordinatesList = []
         const result = await axios.get(url)
-        // console.log('通过搜索到的第一个uid 获取边界', title)
+        console.log('通过uid 获取详细检索', result)
         let content = result.data.content
         if (content.hasOwnProperty('geo') && content.geo) {
           const geo = content.geo
