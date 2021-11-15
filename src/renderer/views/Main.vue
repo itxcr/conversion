@@ -53,7 +53,7 @@
 <script>
 import { ipcRenderer } from 'electron'
 import LayOut from '@/components/LayOut'
-import { Conversion } from '../../framework/utils'
+import { Conversion } from '@framework/utils'
 import axios from 'axios'
 import { v4 as uuidV4 } from 'uuid'
 
@@ -74,7 +74,7 @@ export default {
     this.map = new BMap.Map('container')
     this.map.enableScrollWheelZoom(true)
     this.dw()
-    console.log(this.$config)
+    // console.log(this.$config)
   },
   methods: {
     //定位区域，小地名，使用本地检索方法
@@ -83,11 +83,11 @@ export default {
       this.coordinatesList = []
       const local = new BMap.LocalSearch(this.map, {
         renderOptions: { map: this.map },
+        pageCapacity: 1,
       })
-
       local.search(this.value)
       local.setMarkersSetCallback((poi) => {
-        // console.log(poi, '获取poi')
+        console.log(poi, '获取poi')
         if (poi.length !== 0) {
           this.map.clearOverlays()
           //清除所有覆盖物后，在叠加第一个点
@@ -132,6 +132,7 @@ export default {
           const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.8 })  //创建多边形
           this.map.addOverlay(polygon)
           this.map.setViewport(polygon.getPath())
+          console.log(title)
           return this.tableData = this.coordinatesList.map(item => {
             return {
               id: uuidV4(),
@@ -139,7 +140,6 @@ export default {
               lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
             }
           })
-          console.log(this.tableData)
         }
         this.map.clearOverlays()
         this.tableData = []
@@ -168,7 +168,7 @@ export default {
         //分割点，两个一组，组成百度米制坐标
         const temppoints = []
         for (let i = 0, len = tempco.length; i < len; i++) {
-          const obj = new Object()
+          const obj = {}
           obj.lng = tempco[i]
           obj.lat = tempco[i + 1]
           temppoints.push(obj)
@@ -204,9 +204,9 @@ export default {
         this.$message.error('导出失败')
       }
     },
-    refresh() {
-      this.reload()
-    },
+    // refresh() {
+    //   this.reload()
+    // },
   },
 }
 </script>
@@ -216,6 +216,7 @@ export default {
   /*隐藏滚轮*/
   display: none;
 }
+
 .el-input {
   width: 200px;
 }
