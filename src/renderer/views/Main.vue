@@ -78,7 +78,7 @@ export default {
     this.map.enableScrollWheelZoom(true)
   },
   methods: {
-    //定位区域，小地名，使用本地检索方法
+    //定位区域
     searchCity() {
       this.coordinatesList = []
       const local = new BMap.LocalSearch(this.map, {
