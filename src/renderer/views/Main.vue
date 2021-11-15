@@ -106,8 +106,8 @@ export default {
         this.coordinatesList = []
         const result = await axios.get(url)
         let content = result.data.content
+        this.map.clearOverlays()
         if (content.hasOwnProperty('geo') && content.geo) {
-          this.map.clearOverlays()
           const geo = content.geo
           let points = this.coordinateToPoints(geo)
           if (points && points.indexOf(';') >= 0) {
