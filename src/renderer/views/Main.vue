@@ -65,7 +65,7 @@ export default {
   components: { LayOut },
   data() {
     return {
-      value: '北京朝阳航空科技大厦',
+      value: '',
       map: null,
       coordinatesList: [],
       tableData: [],
@@ -74,9 +74,8 @@ export default {
   },
   mounted() {
     this.map = new BMap.Map('container')
+    this.map.centerAndZoom('航空科技大厦', 20)
     this.map.enableScrollWheelZoom(true)
-    this.searchCity()
-    // console.log(this.$config)
   },
   methods: {
     //定位区域，小地名，使用本地检索方法

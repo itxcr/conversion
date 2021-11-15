@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { Runtime } from '../../framework/runtime'
+import { Runtime } from '@framework/runtime'
 import { ipcRenderer } from 'electron'
 
 export default {
