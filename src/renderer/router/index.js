@@ -17,7 +17,7 @@ const routes = [
   },
   {
     path: '/export',
-    name: 'main',
+    name: 'export',
     component: require('@/views/KML/ExportKml').default,
     meta: {
       menuActive: 2,

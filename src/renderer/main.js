@@ -12,9 +12,9 @@ import VueVirtualScroller from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 if (process.env.NODE_ENV === 'production') {
-  Vue.prototype.$config = Object.freeze(proConfig)
+  Vue.prototype['$config'] = Object.freeze(proConfig)
 } else {
-  Vue.prototype.$config = Object.freeze(devConfig)
+  Vue.prototype['$config'] = Object.freeze(devConfig)
 }
 
 Vue.config.productionTip = false

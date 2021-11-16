@@ -57,7 +57,6 @@ module.exports = {
       .tap(
         args => {
           args[0].baiDuMap = process.env.BAIDUMAPSCRIPT
-          console.log(args)
           return args
         },
       )

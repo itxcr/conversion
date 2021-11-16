@@ -24,6 +24,9 @@ import UiDialog from '@/components/UiDialog'
 export default {
   name: 'ExportKml',
   components: { LayOut, UiDialog },
+  mounted() {
+    console.log(this.$config)
+  }
 
 }
 </script>
