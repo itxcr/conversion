@@ -71,7 +71,6 @@ async function createWindow() {
         extensions: ['kml'],
       }],
     })
-    // console.log(geo)
     if (!canceled) {
       let data = [
         {
@@ -80,23 +79,9 @@ async function createWindow() {
         },
       ]
       const geoJson = GeoJson.parse(data, { 'LineString': 'line', 'Polygon': 'polygon' })
-      // console.log(geoJson)
       await fs.writeFile(filePath, toKml(geoJson), () => {
-        console.log('生成kml文件成功')
+        console.log(`${title}.kml 导出成功`)
       })
-
-      // await fs.writeFile(filePath, geo, () => {
-      //   console.log('成功')
-      // })
-      // fs.stat(filePath, (err, stats) => {
-      //   if(!stats) {
-      //     console.log(filePath)
-      //   }
-      //   console.log(stats)
-      // })
-      // await fs.writeFile(filePath, '111',() => {
-      //   console.log('成功')
-      // })
       return true
     }
     return false

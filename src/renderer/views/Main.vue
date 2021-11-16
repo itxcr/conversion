@@ -5,42 +5,28 @@
         <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 10px;' />
         <el-tooltip effect='dark' content='定位小区' placement='top-start'>
           <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='searchCity'
-                     :disabled='value.length===0' />
+                     :disabled='value.length === 0' />
         </el-tooltip>
         <el-tooltip effect='dark' content='导出文件' placement='top-start'>
           <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='exportFile'
-                     :disabled='tableData.length===0' />
+                     :disabled='coordinatesList.length === 0' />
         </el-tooltip>
       </div>
       <div style='user-select: text;margin-top: 80px;'>
-        <!--        <DynamicScroller-->
-        <!--          :items=tableData-->
-        <!--          :min-item-size='70'-->
-        <!--          class='scroller'>-->
-        <!--          <template v-slot='{ item}'>-->
-        <!--            经度: {{ item.lng }}-->
-        <!--            <br />-->
-        <!--            维度: {{ item.lat }}-->
-        <!--            &lt;!&ndash;            <DynamicScrollerItem&ndash;&gt;-->
-        <!--            &lt;!&ndash;            >&ndash;&gt;-->
-        <!--            &lt;!&ndash;              {{ JSON.stringify(item) }}&ndash;&gt;-->
-        <!--            &lt;!&ndash;              &lt;!&ndash;              <div class='text'>{{ item.size }}</div>&ndash;&gt;&ndash;&gt;-->
-        <!--            &lt;!&ndash;            </DynamicScrollerItem>&ndash;&gt;-->
-        <!--          </template>-->
-        <!--        </DynamicScroller>-->
-
         <el-table
-          :data='tableData'
+          :data='coordinatesList'
           border
           max-height='400'
+          v-loading='searching'
         >
           <el-table-column
-            label='搜索目标范围坐标(WGS-84)'
+            header-align='center'
+            label='范围坐标(WGS-84)'
           >
             <template v-slot='{row}'>
-              经度: {{ row.lng }}
+              经度: {{ row[0] }}
               <br />
-              纬度: {{ row.lat }}
+              维度: {{ row[1] }}
             </template>
           </el-table-column>
         </el-table>
@@ -57,19 +43,17 @@ import { ipcRenderer } from 'electron'
 import LayOut from '@/components/LayOut'
 import { Conversion } from '@framework/utils'
 import axios from 'axios'
-import { v4 as uuidV4 } from 'uuid'
+import _ from 'lodash/throttle'
 
 export default {
   name: 'Main',
-  inject: ['reload'],
   components: { LayOut },
   data() {
     return {
       value: '',
       map: null,
       coordinatesList: [],
-      tableData: [],
-      kml: [],
+      searching: false,
     }
   },
   mounted() {
@@ -79,93 +63,71 @@ export default {
   },
   methods: {
     //定位区域
-    searchCity() {
+    searchCity: _(function() {
       this.coordinatesList = []
+      this.searching = true
       const local = new BMap.LocalSearch(this.map, {
         renderOptions: { map: this.map, panel: 'result' },
         onSearchComplete: (results) => {
           if (local.getStatus() === BMAP_STATUS_SUCCESS && results.getPoi(0)) {
             let { uid } = results.getPoi(0)
             if (uid) return this.queryUid(uid)
-            return this.$message.error('百度API搜索出错，请稍后再试！')
           }
-          this.$message.error('百度API搜索出错，请稍后再试！')
+          this.searching = false
+          return this.$message.error('无搜索目标,请查证后再试!!！')
         },
         pageCapacity: 1,
       })
       local.search(this.value)
-    },
+    }, 800),
     //获取小区信息
     async queryUid(uid) {
-      this.kml = []
       try {
         let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
-        // 第二种根据 uid 获取小区范围坐标
-        // let url = `https://map.baidu.com/?pcevaname=mp&qt=ext&ext_ver=new&l=12&uid=${uid}`
-        let arr = []
-        this.coordinatesList = []
         const result = await axios.get(url)
         let content = result.data.content
-        this.map.clearOverlays()
         if (content.hasOwnProperty('geo') && content.geo) {
-          const geo = content.geo
-          let points = this.coordinateToPoints(geo)
-          if (points && points.indexOf(';') >= 0) {
-            points = points.split(';')
-          }
-          for (let i = 0, len = points.length; i < len - 1; i++) {
-            let temp = points[i].split(',')
-            let convert = Conversion.BaiduToWgs84(temp[0], temp[1])
-            // 导出 84 坐标所用
-            this.kml.push(convert)
-            // 地图绘制范围
-            arr.push(new BMap.Point(parseFloat(temp[0]), parseFloat(temp[1])))
-            this.coordinatesList.push([parseFloat(temp[0]), parseFloat(temp[1])])
-          }
-          // 地图绘制范围
-          const polygon = new BMap.Polyline(arr, { strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5 })  //创建多边形
-          this.map.addOverlay(polygon)
-          this.map.setViewport(polygon.getPath())
-          return this.tableData = this.coordinatesList.map(item => {
-            return {
-              id: uuidV4(),
-              lng: Conversion.BaiduToWgs84(item[0], item[1])[0],
-              lat: Conversion.BaiduToWgs84(item[0], item[1])[1],
-            }
+          const { wgsArr, polygonArr } = this.coordinateToPoints(content.geo)
+          // 地图绘制范围 创建多边形
+          const polygon = new BMap.Polyline(polygonArr, {
+            strokeColor: 'blue',
+            strokeWeight: 3,
+            strokeOpacity: 0.5,
           })
+          this.map.clearOverlays()
+          this.map.addOverlay(polygon)
+          this.coordinatesList = wgsArr
+          this.map.setViewport(polygon.getPath())
+          return this.$message.success(`${this.value} 查询成功`)
         }
-        this.tableData = []
-        this.$message.error(`${this.value}  无范围可获取`)
+        this.map.clearOverlays()
+        this.$message.error(`${this.value}  无范围点覆盖，无法导出`)
       } catch (e) {
         this.$message.error(`百度API搜索出错，请稍后再试！`)
+      } finally {
+        this.searching = false
       }
     },
     //坐标转换
     coordinateToPoints(coordinate) {
-      if (coordinate) {
-        let points = ''
+      if (coordinate && coordinate.indexOf('-') >= 0) {
+        const wgsArr = []
+        const polygonArr = []
         const projection = BMAP_NORMAL_MAP.getProjection()
-        if (coordinate && coordinate.indexOf('-') >= 0) {
-          // 取点集合
-          let tempco = coordinate.split('-')[1]
-          if (tempco && tempco.indexOf(',') >= 0) {
-            tempco = tempco.replace(';', '').split(',')
-            //分割点，两个一组，组成百度米制坐标
-            const temppoints = []
-            for (let i = 0, len = tempco.length; i < len; i++) {
-              const obj = {}
-              obj.lng = tempco[i]
-              obj.lat = tempco[i + 1]
-              temppoints.push(obj)
-              i++
-            }
-            //遍历米制坐标，转换为经纬度
-            for (let i = 0, len = temppoints.length; i < len; i++) {
-              const pos = temppoints[i]
-              const point = projection.pointToLngLat(new BMap.Pixel(pos.lng, pos.lat))
-              points += ([point.lng, point.lat].toString() + ';')
-            }
-            return points
+        let tempco = coordinate.split('-')[1]
+        if (tempco && tempco.indexOf(',') >= 0) {
+          tempco = tempco.replace(';', '').split(',')
+          //分割点，两个一组，组成百度米制坐标
+          //遍历米制坐标，转换为经纬度
+          for (let i = 0, len = tempco.length; i < len; i++) {
+            let point = projection.pointToLngLat(new BMap.Pixel(tempco[i], tempco[i + 1]))
+            wgsArr.push(Conversion.BaiduToWgs84(point.lng, point.lat))
+            polygonArr.push(new BMap.Point(point.lng, point.lat))
+            i++
+          }
+          return {
+            wgsArr,
+            polygonArr,
           }
         }
       }
@@ -175,11 +137,11 @@ export default {
       try {
         const result = await ipcRenderer.invoke('exportSingleFile', JSON.stringify({
           title: this.value,
-          geo: this.kml,
+          geo: this.coordinatesList,
         }))
         if (result) {
           this.value = ''
-          this.tableData = []
+          this.coordinatesList = []
           this.map.clearOverlays()
           return this.$message.success('导出成功')
         }
@@ -188,9 +150,6 @@ export default {
         this.$message.error('导出失败')
       }
     },
-    // refresh() {
-    //   this.reload()
-    // },
   },
 }
 </script>
