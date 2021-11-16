@@ -85,8 +85,9 @@ export default {
         renderOptions: { map: this.map, panel: 'result' },
         onSearchComplete: (results) => {
           if (local.getStatus() === BMAP_STATUS_SUCCESS && results.getPoi(0)) {
-            const { uid } = results.getPoi(0)
-            return this.queryUid(uid)
+            let { uid } = results.getPoi(0)
+            if (uid) return this.queryUid(uid)
+            return this.$message.error('百度API搜索出错，请稍后再试！')
           }
           this.$message.error('百度API搜索出错，请稍后再试！')
         },
@@ -164,9 +165,9 @@ export default {
               const point = projection.pointToLngLat(new BMap.Pixel(pos.lng, pos.lat))
               points += ([point.lng, point.lat].toString() + ';')
             }
+            return points
           }
         }
-        return points
       }
       this.$message.error(`百度API搜索出错，请稍后再试！`)
     },
@@ -195,10 +196,6 @@ export default {
 </script>
 
 <style scoped lang='scss'>
-::-webkit-scrollbar {
-  display: none;
-}
-
 .el-input {
   width: 200px;
 }
