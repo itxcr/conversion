@@ -51,4 +51,15 @@ module.exports = {
       },
     }
   },
+  chainWebpack: config => {
+    config
+      .plugin('html')
+      .tap(
+        args => {
+          args[0].baiDuMap = process.env.BAIDUMAPSCRIPT
+          console.log(args)
+          return args
+        },
+      )
+  },
 }
