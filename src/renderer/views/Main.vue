@@ -142,15 +142,13 @@ export default {
           title: this.value,
           geo: this.coordinatesList,
         }))
-        if (result) {
-          this.value = ''
-          this.coordinatesList = []
-          this.map.clearOverlays()
-          return this.$message.success('导出成功')
-        }
-        this.$message.error('导出失败')
+        if (!result) return
+        this.$message.success(`${this.value}.kml 导出成功`)
+        this.value = ''
+        this.coordinatesList = []
+        this.map.clearOverlays()
       } catch (e) {
-        this.$message.error('导出失败')
+        this.$message.error('导出失败,请稍后再试~！')
       }
     },
   },

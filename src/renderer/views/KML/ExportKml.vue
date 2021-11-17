@@ -1,15 +1,37 @@
 <template>
   <lay-out>
-    <el-main style='display: flex;justify-content: center'>
+    <el-main style='display: flex;justify-content: space-around '>
       <ui-card>
-        <el-descriptions title="用户信息">
-          <el-descriptions-item label="用户名">kooriookami</el-descriptions-item>
-          <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
-          <el-descriptions-item label="居住地">苏州市</el-descriptions-item>
-          <el-descriptions-item label="备注">
-            <el-tag size="small">学校</el-tag>
+        <el-descriptions title='下载模板'>
+          <el-descriptions-item label='下载模板'>
+            <el-button type='primary' round size='mini' @click='downloadTemplate'>
+              <span>下载</span>
+            </el-button>
           </el-descriptions-item>
-          <el-descriptions-item label="联系地址">江苏省苏州市吴中区吴中大道 1188 号</el-descriptions-item>
+        </el-descriptions>
+        <el-descriptions title='导出路径'>
+          <el-descriptions-item label='选择路径'>
+            <el-button type='primary' round size='mini' @click='selectExportFile'>
+              <span v-if='!exportPath'>选择</span>
+              <span v-if='exportPath'>更换</span>
+            </el-button>
+          </el-descriptions-item>
+          <el-descriptions-item label='导出路径' v-if='exportPath'>
+            {{ exportPath }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-descriptions title='导入文档'>
+          <el-descriptions-item label='导入文件'>
+            <el-button type='primary' round size='mini' @click='selectImportFile' :disabled='!exportPath'>选择</el-button>
+          </el-descriptions-item>
+          <el-descriptions-item label='文件路径' v-if='importPath'>
+            {{ importPath }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-descriptions title='开始导出' v-if='exportPath && importPath'>
+          <el-descriptions-item label='执行操作'>
+            <el-button type='primary' round size='mini' @click='selectImportFile'>导出</el-button>
+          </el-descriptions-item>
         </el-descriptions>
       </ui-card>
     </el-main>
@@ -17,122 +39,56 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import LayOut from '@/components/LayOut'
-import { Conversion } from '@framework/utils'
-import axios from 'axios'
-import _ from 'lodash/throttle'
 import UiCard from '@/components/UiCard'
+import { ipcRenderer } from 'electron'
+import { XLSX } from '@framework/utils'
+
 export default {
   name: 'ExportKml',
   components: { LayOut, UiCard },
   data() {
     return {
-      value: '',
-      map: null,
-      coordinatesList: [],
-      searching: false,
+      xlsx: null,
+      exportPath: '',
+      importPath: '',
     }
   },
   mounted() {
-    console.log(this.$config)
+    this.xlsx = localStorage.getItem('xlsxData')
+    const workbook = JSON.parse(this.xlsx)
+    console.log( XLSX.convert(workbook))
   },
   methods: {
-    upload() {
+    async downloadTemplate() {
+      const result = await ipcRenderer.invoke('downloadTemplate')
+      if (!result) return
+
     },
-    //定位区域
-    searchCity: _(function() {
-      this.coordinatesList = []
-      this.searching = true
-      const local = new BMap.LocalSearch(this.map, {
-        renderOptions: { map: this.map, panel: 'result' },
-        onSearchComplete: (results) => {
-          if (local.getStatus() === BMAP_STATUS_SUCCESS && results.getPoi(0)) {
-            let { uid } = results.getPoi(0)
-            if (uid) return this.queryUid(uid)
-          }
-          this.searching = false
-          return this.$message.error('无搜索目标,请查证后再试!!！')
-        },
-        pageCapacity: 1,
-      })
-      local.search(this.value)
-    }, 800),
-    //获取小区信息
-    async queryUid(uid) {
-      try {
-        let url = `https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`
-        const result = await axios.get(url)
-        let content = result.data.content
-        if (content.hasOwnProperty('geo') && content.geo) {
-          const { wgsArr, polygonArr } = this.coordinateToPoints(content.geo)
-          // 地图绘制范围 创建多边形
-          const polygon = new BMap.Polyline(polygonArr, {
-            strokeColor: 'blue',
-            strokeWeight: 3,
-            strokeOpacity: 0.5,
-          })
-          this.map.clearOverlays()
-          this.map.addOverlay(polygon)
-          this.coordinatesList = wgsArr
-          this.map.setViewport(polygon.getPath())
-          return this.$message.success(`${this.value} 查询成功`)
-        }
-        this.map.clearOverlays()
-        this.$message.error(`${this.value}  无范围点覆盖，无法导出`)
-      } catch (e) {
-        this.$message.error(`百度API搜索出错，请稍后再试！`)
-      } finally {
-        this.searching = false
-      }
+    async selectExportFile() {
+      const result = await ipcRenderer.invoke('selectExportPath')
+      if (!result) return
+      this.exportPath = result
     },
-    //坐标转换
-    coordinateToPoints(coordinate) {
-      if (coordinate && coordinate.indexOf('-') >= 0) {
-        const wgsArr = []
-        const polygonArr = []
-        const projection = BMAP_NORMAL_MAP.getProjection()
-        let tempco = coordinate.split('-')[1]
-        if (tempco && tempco.indexOf(',') >= 0) {
-          tempco = tempco.replace(';', '').split(',')
-          //分割点，两个一组，组成百度米制坐标
-          //遍历米制坐标，转换为经纬度
-          for (let i = 0, len = tempco.length; i < len; i++) {
-            let point = projection.pointToLngLat(new BMap.Pixel(tempco[i], tempco[i + 1]))
-            wgsArr.push(Conversion.BaiduToWgs84(point.lng, point.lat))
-            polygonArr.push(new BMap.Point(point.lng, point.lat))
-            i++
-          }
-          return {
-            wgsArr,
-            polygonArr,
-          }
-        }
-      }
-      this.$message.error(`百度API搜索出错，请稍后再试！`)
-    },
-    async exportFile() {
-      try {
-        const result = await ipcRenderer.invoke('exportSingleFile', JSON.stringify({
-          title: this.value,
-          geo: this.coordinatesList,
-        }))
-        if (result) {
-          this.value = ''
-          this.coordinatesList = []
-          this.map.clearOverlays()
-          return this.$message.success('导出成功')
-        }
-        this.$message.error('导出失败')
-      } catch (e) {
-        this.$message.error('导出失败')
-      }
+    async selectImportFile() {
+      const result = await ipcRenderer.invoke('selectImportFile')
+      if (!result) return
+      this.importPath = result.path
+      this.xlsx = result.data
+      localStorage.setItem('xlsxData', JSON.stringify(result.data))
     },
   },
-
 }
 </script>
 
 <style scoped lang='scss'>
+::v-deep .el-descriptions-item__container {
+  align-items: center;
+}
 
+.el-descriptions {
+  &:nth-child(n+2) {
+    margin-top: 50px;
+  }
+}
 </style>

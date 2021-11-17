@@ -28,7 +28,8 @@
     "vue-virtual-scroller": "^1.0.10",
     "vuex": "^3.4.0",
     "winston": "^3.3.3",
-    "winston-daily-rotate-file": "^4.5.5"
+    "winston-daily-rotate-file": "^4.5.5",
+    "xlsx": "^0.17.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

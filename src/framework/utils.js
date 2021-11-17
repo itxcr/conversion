@@ -1,4 +1,27 @@
 import gcoord from 'gcoord'
+import xlsx from 'xlsx'
+
+class XLSX {
+  static convert(sheets) {
+    if (sheets.hasOwnProperty('Sheets')) {
+      sheets = sheets.Sheets
+      let fromTo = ''
+      let persons = []
+      for (let sheet in sheets) {
+        if (sheets.hasOwnProperty(sheet)) {
+          fromTo = sheets[sheet]['!ref']
+          persons = persons.concat(xlsx.utils.sheet_to_json(sheets[sheet]))
+          // break; // 如果只取第一张表，就取消注释这行
+        }
+      }
+      return persons.map(v => {
+        return `${v['省']}${v['市']}${v['区']}${v['小区名称']}`
+      })
+    }
+    return []
+  }
+}
+
 
 class Conversion {
   static BaiduToWgs84(lng, lat) {
@@ -52,4 +75,5 @@ class Conversion {
 
 export {
   Conversion,
+  XLSX,
 }

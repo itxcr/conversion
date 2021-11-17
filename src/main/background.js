@@ -2,12 +2,13 @@
 import { app, protocol, BrowserWindow, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-
-const isDevelopment = process.env.NODE_ENV !== 'production'
 import { ipcMain } from 'electron'
 import fs from 'fs'
 import GeoJson from 'geojson'
 import toKml from 'tokml'
+import xlsx from 'xlsx'
+
+const isDevelopment = process.env.NODE_ENV !== 'production'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
@@ -66,33 +67,55 @@ async function createWindow() {
   ipcMain.handle('exportSingleFile', async (event, args) => {
     const { title, geo } = JSON.parse(args)
     const { canceled, filePath } = await dialog.showSaveDialog({
+      title: `导出 ${title}.kml`,
       defaultPath: title,
       filters: [{
         name: 'kml格式文件',
         extensions: ['kml'],
       }],
     })
-    if (!canceled) {
-      let data = [
-        {
-          name: title,
-          polygon: [geo],
-        },
-      ]
-      const geoJson = GeoJson.parse(data, { 'LineString': 'line', 'Polygon': 'polygon' })
-      await fs.writeFile(filePath, toKml(geoJson), () => {
-        console.log(`${title}.kml 导出成功`)
-      })
-      return true
+    if (canceled) return false
+    const geoJson = GeoJson.parse([{ name: title, polygon: [geo] }], { 'LineString': 'line', 'Polygon': 'polygon' })
+    await fs.writeFileSync(filePath, toKml(geoJson), () => {
+      console.log(`${title}.kml 导出成功`)
+    })
+    return true
+  })
+
+  ipcMain.handle('downloadTemplate', async (event, args) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: '选择小区数据',
+      filters: [
+        { name: 'Excel', extensions: ['xlsx', 'xls'] },
+      ],
+      properties: ['openFile'],
+    })
+  })
+
+  ipcMain.handle('selectImportFile', async (event, arg) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: '选择小区数据',
+      filters: [
+        { name: 'Excel', extensions: ['xlsx', 'xls'] },
+      ],
+      properties: ['openFile'],
+    })
+    if (canceled) return false
+    return {
+      path: filePaths[0],
+      data: xlsx.readFile(filePaths[0]),
     }
-    return false
   })
 
-  ipcMain.on('selectExportPath', (event, arg) => {
-    console.log(arg)
+  ipcMain.handle('selectExportPath', async (event, arg) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+        title: '选择导出路径',
+        properties: ['openDirectory'],
+      },
+    )
+    if (canceled) return false
+    return filePaths[0]
   })
-
-
 }
 
 // Quit when all windows are closed.
