@@ -1,36 +1,38 @@
 <template>
   <lay-out>
-    <el-aside width='300px' class='left-aside'>
-      <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
-        <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 10px;' />
-        <el-tooltip effect='dark' content='定位小区' placement='top-start'>
-          <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='searchCity'
-                     :disabled='value.length === 0' />
-        </el-tooltip>
-        <el-tooltip effect='dark' content='导出文件' placement='top-start'>
-          <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='exportFile'
-                     :disabled='coordinatesList.length === 0' />
-        </el-tooltip>
-      </div>
-      <div style='user-select: text;margin-top: 80px;'>
-        <el-table
-          :data='coordinatesList'
-          border
-          max-height='400'
-          v-loading='searching'
-        >
-          <el-table-column
-            header-align='center'
-            label='范围坐标(WGS-84)'
+    <el-aside width='360px' class='left-aside'>
+      <ui-card>
+        <div class='custom-flex' style='position: fixed;z-index: 2;top: 100px;'>
+          <el-input v-model.trim='value' clearable placeholder='请输入内容' style='margin-right: 18px;' />
+          <el-tooltip effect='dark' content='定位小区' placement='top-start'>
+            <el-button type='plain' class='fas fa-search-location' circle size='mini' @click='searchCity'
+                       :disabled='value.length === 0' />
+          </el-tooltip>
+          <el-tooltip effect='dark' content='导出文件' placement='top-start'>
+            <el-button type='plain' class='fas fa-file-export' circle size='mini' @click='exportFile'
+                       :disabled='coordinatesList.length === 0' />
+          </el-tooltip>
+        </div>
+        <div style='user-select: text;margin-top: 60px;'>
+          <el-table
+            :data='coordinatesList'
+            border
+            max-height='520'
+            v-loading='searching'
           >
-            <template v-slot='{row}'>
-              经度: {{ row[0] }}
-              <br />
-              维度: {{ row[1] }}
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+            <el-table-column
+              header-align='center'
+              label='范围坐标(WGS-84)'
+            >
+              <template v-slot='{row}'>
+                经度: {{ row[0] }}
+                <br />
+                维度: {{ row[1] }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </ui-card>
     </el-aside>
     <el-main>
       <div id='container' style='width:100%;height:100%;'></div>
@@ -44,10 +46,11 @@ import LayOut from '@/components/LayOut'
 import { Conversion } from '@framework/utils'
 import axios from 'axios'
 import _ from 'lodash/throttle'
+import UiCard from '@/components/UiCard'
 
 export default {
   name: 'Main',
-  components: { LayOut },
+  components: { UiCard, LayOut },
   data() {
     return {
       value: '',
@@ -156,6 +159,6 @@ export default {
 
 <style scoped lang='scss'>
 .el-input {
-  width: 200px;
+  width: 210px;
 }
 </style>

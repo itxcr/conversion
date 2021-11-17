@@ -87,6 +87,12 @@ async function createWindow() {
     }
     return false
   })
+
+  ipcMain.on('selectExportPath', (event, arg) => {
+    console.log(arg)
+  })
+
+
 }
 
 // Quit when all windows are closed.

@@ -1,15 +1,17 @@
 <template>
   <lay-out>
     <el-main style='display: flex;justify-content: center'>
-      <el-upload
-        class='upload-demo'
-        drag
-        action='https://jsonplaceholder.typicode.com/posts/'
-        multiple>
-        <i class='el-icon-upload'></i>
-        <div class='el-upload__text'>将文件拖到此处，或<em>点击上传</em></div>
-        <div class='el-upload__tip' slot='tip'>只能上传jpg/png文件，且不超过500kb</div>
-      </el-upload>
+      <ui-card>
+        <el-descriptions title="用户信息">
+          <el-descriptions-item label="用户名">kooriookami</el-descriptions-item>
+          <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
+          <el-descriptions-item label="居住地">苏州市</el-descriptions-item>
+          <el-descriptions-item label="备注">
+            <el-tag size="small">学校</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="联系地址">江苏省苏州市吴中区吴中大道 1188 号</el-descriptions-item>
+        </el-descriptions>
+      </ui-card>
     </el-main>
   </lay-out>
 </template>
@@ -21,7 +23,6 @@ import { Conversion } from '@framework/utils'
 import axios from 'axios'
 import _ from 'lodash/throttle'
 import UiCard from '@/components/UiCard'
-
 export default {
   name: 'ExportKml',
   components: { LayOut, UiCard },
@@ -37,6 +38,8 @@ export default {
     console.log(this.$config)
   },
   methods: {
+    upload() {
+    },
     //定位区域
     searchCity: _(function() {
       this.coordinatesList = []
