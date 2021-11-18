@@ -25,7 +25,6 @@
     "uuid": "^8.3.2",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
-    "vue-virtual-scroller": "^1.0.10",
     "vuex": "^3.4.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",

@@ -1,23 +1,28 @@
 import gcoord from 'gcoord'
 import xlsx from 'xlsx'
+import { v4 as uuidV4 } from 'uuid'
 
 class XLSX {
   static convert(sheets) {
     if (sheets.hasOwnProperty('Sheets')) {
       sheets = sheets.Sheets
-      let fromTo = ''
       let persons = []
       for (let sheet in sheets) {
         if (sheets.hasOwnProperty(sheet)) {
-          fromTo = sheets[sheet]['!ref']
           persons = persons.concat(xlsx.utils.sheet_to_json(sheets[sheet]))
           // break; // 如果只取第一张表，就取消注释这行
         }
       }
       if (persons[0].hasOwnProperty('省') && persons[0].hasOwnProperty('市') && persons[0].hasOwnProperty('区') && persons[0].hasOwnProperty('小区名称')) {
-        return persons.map(v => {
-          return `${v['省']}${v['市']}${v['区']}${v['小区名称']}`
-        })
+        return persons.reduce((pre, cur) => {
+          return cur['省'] !== undefined && cur['市'] !== undefined && cur['区'] !== undefined && cur['小区名称'] !== undefined ? pre.concat({
+            id: uuidV4(),
+            province: cur['省'],
+            city: cur['市'],
+            area: cur['区'],
+            community: cur['小区名称'],
+          }) : pre
+        }, [])
       }
     }
     return false

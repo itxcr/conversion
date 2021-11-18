@@ -34,6 +34,37 @@
           </el-descriptions-item>
         </el-descriptions>
       </ui-card>
+      <ui-card v-if='xlsx.length !== 0'>
+        <el-descriptions>
+          <el-descriptions-item>
+            <el-table
+              :data='xlsx'
+              border
+              max-height='560'
+              style='width: 100%'>
+              <el-table-column
+                prop='province'
+                label='省'
+              >
+              </el-table-column>
+              <el-table-column
+                prop='city'
+                label='市'
+              >
+              </el-table-column>
+              <el-table-column
+                prop='area'
+                label='区'>
+              </el-table-column>
+              <el-table-column
+                prop='community'
+                label='小区名称'
+                min-width='180'>
+              </el-table-column>
+            </el-table>
+          </el-descriptions-item>
+        </el-descriptions>
+      </ui-card>
     </el-main>
   </lay-out>
 </template>
@@ -48,15 +79,10 @@ export default {
   components: { LayOut, UiCard },
   data() {
     return {
-      xlsx: null,
+      xlsx: [],
       exportPath: '',
       importPath: '',
     }
-  },
-  mounted() {
-    // this.xlsx = localStorage.getItem('xlsxData')
-    // const workbook = JSON.parse(this.xlsx)
-    // console.log(XLSX.convert(workbook))
   },
   methods: {
     async downloadTemplate() {
@@ -78,7 +104,7 @@ export default {
       }
       this.importPath = result.path
       this.xlsx = result.data
-      localStorage.setItem('xlsxData', JSON.stringify(result.data))
+      console.log(this.xlsx)
     },
     beginExport() {
       console.log('开始导出')
@@ -96,5 +122,9 @@ export default {
   &:nth-child(n+2) {
     margin-top: 50px;
   }
+}
+
+::v-deep .el-descriptions-item__label.has-colon::after {
+  content: ''
 }
 </style>
