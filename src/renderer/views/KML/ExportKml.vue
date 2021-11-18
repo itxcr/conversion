@@ -122,10 +122,21 @@ export default {
       this.xlsx = result.data.map(v => {
         return `${v.province}${v.city}${v.area}${v.community}`
       })
-      console.log(this.xlsx)
     },
-    beginExport() {
-      console.log('开始导出')
+    async beginExport() {
+      const local = new BMap.LocalSearch(new BMap.Map(), {
+        pageCapacity: 1,
+      })
+      for (let i = 0, len = this.xlsx.length; i < len; i++) {
+        local.search(`${this.xlsx[i]}`)
+        local.setSearchCompleteCallback(function(result) {
+          console.log(result.getPoi(0))
+        })
+      }
+
+      // let pro = []
+      // const result = await Promise.all(pro)
+      // console.log(result)
     },
   },
   beforeDestroy() {
