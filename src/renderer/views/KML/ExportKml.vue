@@ -45,21 +45,29 @@
               <el-table-column
                 prop='province'
                 label='省'
+                width='70'
               >
               </el-table-column>
               <el-table-column
                 prop='city'
                 label='市'
+                width='70'
               >
               </el-table-column>
               <el-table-column
                 prop='area'
+                width='70'
                 label='区'>
               </el-table-column>
               <el-table-column
                 prop='community'
                 label='小区名称'
-                min-width='180'>
+                min-width='160'>
+              </el-table-column>
+              <el-table-column
+                prop='status'
+                label='状态'
+                min-width='80'>
               </el-table-column>
             </el-table>
           </el-descriptions-item>

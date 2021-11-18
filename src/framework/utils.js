@@ -21,6 +21,7 @@ class XLSX {
             city: cur['市'],
             area: cur['区'],
             community: cur['小区名称'],
+            status: '未导出'
           }) : pre
         }, [])
       }
