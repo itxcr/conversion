@@ -152,6 +152,10 @@ export default {
       }
     },
   },
+  beforeDestroy() {
+    this.map = null
+    this.coordinatesList = []
+  }
 }
 </script>
 

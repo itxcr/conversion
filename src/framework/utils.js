@@ -14,15 +14,25 @@ class XLSX {
         }
       }
       if (persons[0].hasOwnProperty('省') && persons[0].hasOwnProperty('市') && persons[0].hasOwnProperty('区') && persons[0].hasOwnProperty('小区名称')) {
-        return persons.reduce((pre, cur) => {
-          return cur['省'] !== undefined && cur['市'] !== undefined && cur['区'] !== undefined && cur['小区名称'] !== undefined ? pre.concat({
+        if (persons.length >= 3000) return 'tooLong'
+        return persons.reduce((init, cur) => {
+          return cur['省'] !== undefined && cur['市'] !== undefined && cur['区'] !== undefined && cur['小区名称'] !== undefined ? init.concat({
             id: uuidV4(),
             province: cur['省'],
             city: cur['市'],
             area: cur['区'],
             community: cur['小区名称'],
-            status: '未导出'
-          }) : pre
+          }) : init
+          // if (cur['省'] !== undefined && cur['市'] !== undefined && cur['区'] !== undefined && cur['小区名称'] !== undefined) {
+          //   init.push({
+          //     id: uuidV4(),
+          //     province: cur['省'],
+          //     city: cur['市'],
+          //     area: cur['区'],
+          //     community: cur['小区名称'],
+          //   })
+          // }
+          // return init
         }, [])
       }
     }

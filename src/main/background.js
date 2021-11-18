@@ -113,6 +113,7 @@ async function createWindow() {
     if (canceled) return false
     const data = XLSX.convert(XLSX.readFile(filePaths[0]))
     if (!data) return 'errorFile'
+    if (data === 'tooLong') return data
     return {
       path: filePaths[0],
       data,
