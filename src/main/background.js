@@ -7,6 +7,8 @@ import fs from 'fs'
 import GeoJson from 'geojson'
 import toKml from 'tokml'
 import { XLSX } from '../framework/utils'
+import xlsx from 'xlsx'
+import template from '../framework/mb.json'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -92,10 +94,10 @@ async function createWindow() {
       ],
     })
     if (canceled) return false
-    console.log(filePath)
-    await fs.writeFileSync(filePath, '132', () => {
-      console.log(`${title}.xlsx 导出成功`)
-    })
+    const sheet = xlsx.utils.json_to_sheet(template)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, sheet, '模板')
+    await xlsx.writeFile(workbook, filePath)
     return true
   })
 

@@ -63,7 +63,6 @@ export default {
       const result = await ipcRenderer.invoke('downloadTemplate')
       if (!result) return
       this.$message.success('模板下载成功')
-      console.log(result)
     },
     async selectExportPath() {
       const result = await ipcRenderer.invoke('selectExportPath')
