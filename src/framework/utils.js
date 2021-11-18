@@ -14,11 +14,17 @@ class XLSX {
           // break; // 如果只取第一张表，就取消注释这行
         }
       }
-      return persons.map(v => {
-        return `${v['省']}${v['市']}${v['区']}${v['小区名称']}`
-      })
+      if (persons[0].hasOwnProperty('省') && persons[0].hasOwnProperty('市') && persons[0].hasOwnProperty('区') && persons[0].hasOwnProperty('小区名称')) {
+        return persons.map(v => {
+          return `${v['省']}${v['市']}${v['区']}${v['小区名称']}`
+        })
+      }
     }
-    return []
+    return false
+  }
+
+  static readFile(path) {
+    return xlsx.readFile(path)
   }
 }
 

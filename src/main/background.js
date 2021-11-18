@@ -6,7 +6,7 @@ import { ipcMain } from 'electron'
 import fs from 'fs'
 import GeoJson from 'geojson'
 import toKml from 'tokml'
-import xlsx from 'xlsx'
+import { XLSX } from '../framework/utils'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -83,33 +83,44 @@ async function createWindow() {
   })
 
   ipcMain.handle('downloadTemplate', async (event, args) => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: '选择小区数据',
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: '模板下载',
+      defaultPath: '模板.xlsx',
+      buttonLabel: '保存',
       filters: [
-        { name: 'Excel', extensions: ['xlsx', 'xls'] },
+        { name: 'Excel', extensions: ['xlsx'] },
       ],
-      properties: ['openFile'],
     })
+    if (canceled) return false
+    console.log(filePath)
+    await fs.writeFileSync(filePath, '132', () => {
+      console.log(`${title}.xlsx 导出成功`)
+    })
+    return true
   })
 
   ipcMain.handle('selectImportFile', async (event, arg) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: '选择小区数据',
+      title: '选择导入模板',
+      buttonLabel: '确定',
       filters: [
         { name: 'Excel', extensions: ['xlsx', 'xls'] },
       ],
       properties: ['openFile'],
     })
     if (canceled) return false
+    const data = XLSX.convert(XLSX.readFile(filePaths[0]))
+    if (!data) return 'errorFile'
     return {
       path: filePaths[0],
-      data: xlsx.readFile(filePaths[0]),
+      data,
     }
   })
 
   ipcMain.handle('selectExportPath', async (event, arg) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
         title: '选择导出路径',
+        buttonLabel: '确定',
         properties: ['openDirectory'],
       },
     )
