@@ -35,6 +35,10 @@
           <el-descriptions-item label='执行操作'>
             <el-button type='primary' round size='mini' @click='beginExport' :disabled='btnDisable'>导出</el-button>
           </el-descriptions-item>
+          <el-descriptions-item label='导出结果' v-if='resultErr.length !== 0 || resultSuccess.length !== 0'>
+            成功: <span>{{ resultSuccess.length }}</span>
+            失败: <span>{{ resultErr.length }}</span>
+          </el-descriptions-item>
         </el-descriptions>
       </ui-card>
       <!--      <ui-card v-if='xlsx.length !== 0'>-->
@@ -96,6 +100,8 @@ export default {
       exportPath: '',
       importPath: '',
       btnDisable: false,
+      resultErr: [],
+      resultSuccess: [],
     }
   },
   methods: {
@@ -147,6 +153,8 @@ export default {
         geoArr.push(await this.returnSearchPromise(res[i]))
       }
       const result = await ipcRenderer.invoke('exportKml', await Promise.all(geoArr))
+      this.resultSuccess = result.success
+      this.resultErr = result.err
       this.btnDisable = result ? !result : result
     },
     returnPromise(index, local) {
@@ -198,7 +206,7 @@ export default {
           return wgsArr
         }
       }
-      return []
+      return '失败'
     },
   },
   beforeDestroy() {

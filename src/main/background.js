@@ -24,6 +24,7 @@ if (!gotTheLock) {
 }
 
 async function createWindow() {
+  let exportFilePath = ''
   // Create the browser window.
   const win = new BrowserWindow({
     minHeight: 720,
@@ -129,11 +130,13 @@ async function createWindow() {
       },
     )
     if (canceled) return false
+    exportFilePath = filePaths[0]
     return filePaths[0]
   })
 
   ipcMain.handle('exportKml', async (event, arg) => {
     let err = []
+    let success = []
     for (let i = 0, len = arg.length; i < len; i++) {
       if (arg[i].geo === '失败') {
         err.push(arg[i].name)
@@ -143,11 +146,15 @@ async function createWindow() {
       const geoJson = GeoJson.parse([{ name: arg[i].name, polygon: [arg[i].geo] }],
         { 'LineString': 'line', 'Polygon': 'polygon' })
       await fs.writeFile(arg[i].fileName, toKml(geoJson), () => {
-        console.log(`${arg[i].name}.kml 导出成功`)
       })
+      success.push(arg[i].name)
     }
-    console.log(err)
-    return true
+    await fs.writeFile(`${exportFilePath}\\失败.log`, err.toString(), () => {
+    })
+    return {
+      success,
+      err,
+    }
   })
 }
 
