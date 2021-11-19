@@ -133,13 +133,20 @@ async function createWindow() {
   })
 
   ipcMain.handle('exportKml', async (event, arg) => {
-    console.time('start')
+    let err = []
     for (let i = 0, len = arg.length; i < len; i++) {
-      if (arg[i].uid === '失败') continue
-      if (fs.existsSync(arg[i].filePath)) continue
-      await makeDir(arg[i].filePath)
+      if (arg[i].geo === '失败') {
+        err.push(arg[i].name)
+        continue
+      }
+      if (!fs.existsSync(arg[i].filePath)) await makeDir(arg[i].filePath)
+      const geoJson = GeoJson.parse([{ name: arg[i].name, polygon: [arg[i].geo] }],
+        { 'LineString': 'line', 'Polygon': 'polygon' })
+      await fs.writeFile(arg[i].fileName, toKml(geoJson), () => {
+        console.log(`${arg[i].name}.kml 导出成功`)
+      })
     }
-    console.timeEnd('start')
+    console.log(err)
     return true
   })
 }

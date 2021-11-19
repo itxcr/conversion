@@ -143,42 +143,43 @@ export default {
         promiseArr.push(await this.returnPromise(i, local))
       }
       let res = await Promise.all(promiseArr)
-      // res = res.filter(v => {
-      //   return v.uid !== '失败'
-      // })
       for (let i = 0, len = res.length; i < len; i++) {
-        geoArr.push(await this.returnSearchPromise({ uid: res[i].uid, name: res[i].name }))
+        geoArr.push(await this.returnSearchPromise(res[i]))
       }
-      console.log(await Promise.all(geoArr))
-      // const result = await ipcRenderer.invoke('exportKml', res)
-      // this.btnDisable = result ? !result : result
+      const result = await ipcRenderer.invoke('exportKml', await Promise.all(geoArr))
+      this.btnDisable = result ? !result : result
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
         local.search(`${this.xlsx[index].address}`)
         local.setSearchCompleteCallback((result) => {
-          setTimeout(() => {
-            resolve({
-              name: this.xlsx[index].name,
-              address: result.keyword,
-              filePath: this.xlsx[index].filePath,
-              fileName: this.xlsx[index].fileName,
-              uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
-            })
-          }, 50)
+          resolve({
+            name: this.xlsx[index].name,
+            filePath: this.xlsx[index].filePath,
+            fileName: this.xlsx[index].fileName,
+            uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+          })
         })
       }))
     },
-    async returnSearchPromise({ uid, name }) {
+    async returnSearchPromise({ uid, name, filePath, fileName }) {
       const result = await axios.get(`https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`)
       if (result.data.content.hasOwnProperty('geo') && result.data.content.geo) {
         return new Promise((resolve => {
           resolve({
             name,
+            filePath,
+            fileName,
             geo: this.coordinateToPoints(result.data.content.geo),
           })
         }))
       }
+      return new Promise((resolve => {
+        resolve({
+          name,
+          geo: '失败',
+        })
+      }))
     },
     coordinateToPoints(coordinate) {
       if (coordinate && coordinate.indexOf('-') >= 0) {
