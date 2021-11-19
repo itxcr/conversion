@@ -4,14 +4,14 @@
       <ui-card>
         <el-descriptions title='下载模板'>
           <el-descriptions-item label='下载模板'>
-            <el-button type='primary' round size='mini' @click='downloadTemplate'>
+            <el-button type='primary' round size='mini' @click='downloadTemplate' :disabled='btnDisable'>
               <span>下载</span>
             </el-button>
           </el-descriptions-item>
         </el-descriptions>
         <el-descriptions title='导出路径'>
           <el-descriptions-item label='选择路径'>
-            <el-button type='primary' round size='mini' @click='selectExportPath'>
+            <el-button type='primary' round size='mini' @click='selectExportPath' :disabled='btnDisable'>
               <span v-if='!exportPath'>选择</span>
               <span v-if='exportPath'>更换</span>
             </el-button>
@@ -22,7 +22,8 @@
         </el-descriptions>
         <el-descriptions title='导入文档'>
           <el-descriptions-item label='导入文件'>
-            <el-button type='primary' round size='mini' @click='selectImportFile' :disabled='!exportPath'>
+            <el-button type='primary' round size='mini' @click='selectImportFile'
+                       :disabled='!exportPath || btnDisable'>
               选择
             </el-button>
           </el-descriptions-item>
@@ -32,7 +33,7 @@
         </el-descriptions>
         <el-descriptions title='开始导出' v-if='exportPath && importPath'>
           <el-descriptions-item label='执行操作'>
-            <el-button type='primary' round size='mini' @click='beginExport'>导出</el-button>
+            <el-button type='primary' round size='mini' @click='beginExport' :disabled='btnDisable'>导出</el-button>
           </el-descriptions-item>
         </el-descriptions>
       </ui-card>
@@ -92,6 +93,7 @@ export default {
       xlsx: [],
       exportPath: '',
       importPath: '',
+      btnDisable: false,
     }
   },
   methods: {
@@ -122,11 +124,13 @@ export default {
       this.xlsx = result.data.map(v => {
         return {
           address: `${v.province}${v.city}${v.area}${v.community}`,
-          filePath: `${v.province}/${v.city}/${v.area}`,
+          filePath: `${this.exportPath}\\${v.province}\\${v.city}\\${v.area}`,
+          fileName: `${this.exportPath}\\${v.province}\\${v.city}\\${v.area}\\${v.community}.kml`,
         }
       })
     },
     async beginExport() {
+      this.btnDisable = true
       const promiseArr = []
       const local = new BMap.LocalSearch(new BMap.Map(), {
         pageCapacity: 1,
@@ -135,7 +139,8 @@ export default {
         promiseArr.push(await this.returnPromise(i, local))
       }
       const res = await Promise.all(promiseArr)
-      await ipcRenderer.invoke('exportKml', res)
+      const result = await ipcRenderer.invoke('exportKml', res)
+      this.btnDisable = result ? !result : result
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
@@ -145,9 +150,10 @@ export default {
             resolve({
               address: result.keyword,
               filePath: this.xlsx[index].filePath,
+              fileName: this.xlsx[index].fileName,
               uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
             })
-          }, 500)
+          }, 50)
         })
       }))
     },

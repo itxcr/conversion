@@ -133,7 +133,14 @@ async function createWindow() {
   })
 
   ipcMain.handle('exportKml', async (event, arg) => {
-    console.log(arg)
+    console.time('start')
+    for (let i = 0, len = arg.length; i < len; i++) {
+      if (arg[i].uid === '失败') continue
+      if (fs.existsSync(arg[i].filePath)) continue
+      await makeDir(arg[i].filePath)
+    }
+    console.timeEnd('start')
+    return true
   })
 }
 
