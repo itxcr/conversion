@@ -84,6 +84,8 @@
 import LayOut from '@/components/LayOut'
 import UiCard from '@/components/UiCard'
 import { ipcRenderer } from 'electron'
+import axios from 'axios'
+import { Conversion } from '@framework/utils'
 
 export default {
   name: 'ExportKml',
@@ -123,6 +125,7 @@ export default {
       this.importPath = result.path
       this.xlsx = result.data.map(v => {
         return {
+          name: v.community,
           address: `${v.province}${v.city}${v.area}${v.community}`,
           filePath: `${this.exportPath}\\${v.province}\\${v.city}\\${v.area}`,
           fileName: `${this.exportPath}\\${v.province}\\${v.city}\\${v.area}\\${v.community}.kml`,
@@ -132,15 +135,23 @@ export default {
     async beginExport() {
       this.btnDisable = true
       const promiseArr = []
+      const geoArr = []
       const local = new BMap.LocalSearch(new BMap.Map(), {
         pageCapacity: 1,
       })
       for (let i = 0, len = this.xlsx.length; i < len; i++) {
         promiseArr.push(await this.returnPromise(i, local))
       }
-      const res = await Promise.all(promiseArr)
-      const result = await ipcRenderer.invoke('exportKml', res)
-      this.btnDisable = result ? !result : result
+      let res = await Promise.all(promiseArr)
+      // res = res.filter(v => {
+      //   return v.uid !== '失败'
+      // })
+      for (let i = 0, len = res.length; i < len; i++) {
+        geoArr.push(await this.returnSearchPromise({ uid: res[i].uid, name: res[i].name }))
+      }
+      console.log(await Promise.all(geoArr))
+      // const result = await ipcRenderer.invoke('exportKml', res)
+      // this.btnDisable = result ? !result : result
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
@@ -148,6 +159,7 @@ export default {
         local.setSearchCompleteCallback((result) => {
           setTimeout(() => {
             resolve({
+              name: this.xlsx[index].name,
               address: result.keyword,
               filePath: this.xlsx[index].filePath,
               fileName: this.xlsx[index].fileName,
@@ -156,6 +168,36 @@ export default {
           }, 50)
         })
       }))
+    },
+    async returnSearchPromise({ uid, name }) {
+      const result = await axios.get(`https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`)
+      if (result.data.content.hasOwnProperty('geo') && result.data.content.geo) {
+        return new Promise((resolve => {
+          resolve({
+            name,
+            geo: this.coordinateToPoints(result.data.content.geo),
+          })
+        }))
+      }
+    },
+    coordinateToPoints(coordinate) {
+      if (coordinate && coordinate.indexOf('-') >= 0) {
+        const wgsArr = []
+        const projection = BMAP_NORMAL_MAP.getProjection()
+        let tempco = coordinate.split('-')[1]
+        if (tempco && tempco.indexOf(',') >= 0) {
+          tempco = tempco.replace(';', '').split(',')
+          //分割点，两个一组，组成百度米制坐标
+          //遍历米制坐标，转换为经纬度
+          for (let i = 0, len = tempco.length; i < len; i++) {
+            let point = projection.pointToLngLat(new BMap.Pixel(tempco[i], tempco[i + 1]))
+            wgsArr.push(Conversion.BaiduToWgs84(point.lng, point.lat))
+            i++
+          }
+          return wgsArr
+        }
+      }
+      return []
     },
   },
   beforeDestroy() {
