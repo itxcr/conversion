@@ -9,6 +9,7 @@ import toKml from 'tokml'
 import { XLSX } from '../framework/utils'
 import xlsx from 'xlsx'
 import template from '../framework/mb.json'
+import makeDir from 'make-dir'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -129,6 +130,10 @@ async function createWindow() {
     )
     if (canceled) return false
     return filePaths[0]
+  })
+
+  ipcMain.handle('exportKml', async (event, arg) => {
+    console.log(arg)
   })
 }
 

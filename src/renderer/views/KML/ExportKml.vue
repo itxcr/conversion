@@ -120,23 +120,36 @@ export default {
       }
       this.importPath = result.path
       this.xlsx = result.data.map(v => {
-        return `${v.province}${v.city}${v.area}${v.community}`
+        return {
+          address: `${v.province}${v.city}${v.area}${v.community}`,
+          filePath: `${v.province}/${v.city}/${v.area}`,
+        }
       })
     },
     async beginExport() {
+      const promiseArr = []
       const local = new BMap.LocalSearch(new BMap.Map(), {
         pageCapacity: 1,
       })
       for (let i = 0, len = this.xlsx.length; i < len; i++) {
-        local.search(`${this.xlsx[i]}`)
-        local.setSearchCompleteCallback(function(result) {
-          console.log(result.getPoi(0))
-        })
+        promiseArr.push(await this.returnPromise(i, local))
       }
-
-      // let pro = []
-      // const result = await Promise.all(pro)
-      // console.log(result)
+      const res = await Promise.all(promiseArr)
+      await ipcRenderer.invoke('exportKml', res)
+    },
+    returnPromise(index, local) {
+      return new Promise((resolve => {
+        local.search(`${this.xlsx[index].address}`)
+        local.setSearchCompleteCallback((result) => {
+          setTimeout(() => {
+            resolve({
+              address: result.keyword,
+              filePath: this.xlsx[index].filePath,
+              uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+            })
+          }, 500)
+        })
+      }))
     },
   },
   beforeDestroy() {
