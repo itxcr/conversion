@@ -159,35 +159,43 @@ export default {
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
-        local.search(`${this.xlsx[index].address}`)
-        local.setSearchCompleteCallback((result) => {
-          resolve({
-            name: this.xlsx[index].name,
-            filePath: this.xlsx[index].filePath,
-            fileName: this.xlsx[index].fileName,
-            uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+        try {
+          local.search(`${this.xlsx[index].address}`)
+          local.setSearchCompleteCallback((result) => {
+            resolve({
+              name: this.xlsx[index].name,
+              filePath: this.xlsx[index].filePath,
+              fileName: this.xlsx[index].fileName,
+              uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+            })
           })
-        })
+        } catch (e) {
+          console.log(e)
+        }
       }))
     },
     async returnSearchPromise({ uid, name, filePath, fileName }) {
-      const result = await axios.get(`https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`)
-      if (result.data.content.hasOwnProperty('geo') && result.data.content.geo) {
+      try {
+        const result = await axios.get(`https://map.baidu.com/?reqflag=pcmap&from=webmap&qt=ext&uid=${uid}&ext_ver=new&l=18`)
+        if (result.data.content.hasOwnProperty('geo') && result.data.content.geo) {
+          return new Promise((resolve => {
+            resolve({
+              name,
+              filePath,
+              fileName,
+              geo: this.coordinateToPoints(result.data.content.geo),
+            })
+          }))
+        }
         return new Promise((resolve => {
           resolve({
             name,
-            filePath,
-            fileName,
-            geo: this.coordinateToPoints(result.data.content.geo),
+            geo: '失败',
           })
         }))
+      } catch (e) {
+        console.log(e)
       }
-      return new Promise((resolve => {
-        resolve({
-          name,
-          geo: '失败',
-        })
-      }))
     },
     coordinateToPoints(coordinate) {
       if (coordinate && coordinate.indexOf('-') >= 0) {

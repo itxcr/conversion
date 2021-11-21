@@ -12,6 +12,7 @@ import template from '../framework/mb.json'
 import makeDir from 'make-dir'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
+let exportFilePath = ''
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
@@ -24,7 +25,6 @@ if (!gotTheLock) {
 }
 
 async function createWindow() {
-  let exportFilePath = ''
   // Create the browser window.
   const win = new BrowserWindow({
     minHeight: 720,
@@ -149,8 +149,15 @@ async function createWindow() {
       })
       success.push(arg[i].name)
     }
-    await fs.writeFile(`${exportFilePath}\\失败.log`, err.toString(), () => {
+    err = err.map(err => {
+      return {
+        '小区名称': err,
+      }
     })
+    const sheet = xlsx.utils.json_to_sheet(err)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, sheet, '失败')
+    await xlsx.writeFile(workbook, `${exportFilePath}\\失败.xlsx`)
     return {
       success,
       err,
