@@ -156,7 +156,6 @@ export default {
       this.resultSuccess = result.success
       this.resultErr = result.err
       this.btnDisable = result ? !result : result
-      this.xlsx = []
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
@@ -171,7 +170,7 @@ export default {
                 uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
               })
             })
-          }, 700)
+          }, 100)
         } catch (e) {
           console.log(e)
         }
