@@ -156,19 +156,22 @@ export default {
       this.resultSuccess = result.success
       this.resultErr = result.err
       this.btnDisable = result ? !result : result
+      this.xlsx = []
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
         try {
-          local.search(`${this.xlsx[index].address}`)
-          local.setSearchCompleteCallback((result) => {
-            resolve({
-              name: this.xlsx[index].name,
-              filePath: this.xlsx[index].filePath,
-              fileName: this.xlsx[index].fileName,
-              uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+          setTimeout(() => {
+            local.search(`${this.xlsx[index].address}`)
+            local.setSearchCompleteCallback((result) => {
+              resolve({
+                name: this.xlsx[index].name,
+                filePath: this.xlsx[index].filePath,
+                fileName: this.xlsx[index].fileName,
+                uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
+              })
             })
-          })
+          }, 700)
         } catch (e) {
           console.log(e)
         }
