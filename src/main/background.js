@@ -10,6 +10,7 @@ import { XLSX } from '../framework/utils'
 import xlsx from 'xlsx'
 import template from '../framework/mb.json'
 import makeDir from 'make-dir'
+import moment from 'moment'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let exportFilePath = ''
@@ -157,7 +158,7 @@ async function createWindow() {
     const sheet = xlsx.utils.json_to_sheet(err)
     const workbook = xlsx.utils.book_new()
     xlsx.utils.book_append_sheet(workbook, sheet, '失败')
-    await xlsx.writeFile(workbook, `${exportFilePath}\\失败.xlsx`)
+    await xlsx.writeFile(workbook, `${exportFilePath}\\失败-${moment().format('X')}.xlsx`)
     return {
       success,
       err,

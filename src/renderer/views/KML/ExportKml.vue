@@ -1,6 +1,8 @@
 <template>
   <lay-out>
-    <el-main style='display: flex;justify-content: space-around'>
+    <el-main style='display: flex;justify-content: space-around' v-loading='btnDisable'
+             element-loading-text='拼命搜索导出kml中' element-loading-spinner='el-icon-loading'
+             element-loading-background='rgba(0, 0, 0, 0.8)'>
       <ui-card>
         <el-descriptions title='下载模板'>
           <el-descriptions-item label='下载模板'>
@@ -35,7 +37,9 @@
           <el-descriptions-item label='执行操作'>
             <el-button type='primary' round size='mini' @click='beginExport' :disabled='btnDisable'>导出</el-button>
           </el-descriptions-item>
-          <el-descriptions-item label='导出结果' v-if='resultErr.length !== 0 || resultSuccess.length !== 0'>
+        </el-descriptions>
+        <el-descriptions title='导出结果' v-if='resultSuccess.length !== 0 || resultErr.length !== 0'>
+          <el-descriptions-item label='导出结果'>
             成功: <span>{{ resultSuccess.length }}</span>
             失败: <span>{{ resultErr.length }}</span>
           </el-descriptions-item>
@@ -106,9 +110,13 @@ export default {
   },
   methods: {
     async downloadTemplate() {
-      const result = await ipcRenderer.invoke('downloadTemplate')
-      if (!result) return
-      this.$message.success('模板下载成功')
+      try {
+        const result = await ipcRenderer.invoke('downloadTemplate')
+        if (!result) return
+        this.$message.success('模板下载成功')
+      } catch (e) {
+        this.$message.error('模板文件已经被打开，请关闭打开的模板文件后再下载')
+      }
     },
     async selectExportPath() {
       const result = await ipcRenderer.invoke('selectExportPath')
@@ -139,23 +147,33 @@ export default {
       })
     },
     async beginExport() {
-      this.btnDisable = true
-      const promiseArr = []
-      const geoArr = []
-      const local = new BMap.LocalSearch(new BMap.Map(), {
-        pageCapacity: 1,
-      })
-      for (let i = 0, len = this.xlsx.length; i < len; i++) {
-        promiseArr.push(await this.returnPromise(i, local))
+      try {
+        this.resultErr = []
+        this.resultSuccess = []
+        this.btnDisable = true
+        const promiseArr = []
+        const geoArr = []
+        const local = new BMap.LocalSearch(new BMap.Map(), {
+          pageCapacity: 1,
+        })
+        for (let i = 0, len = this.xlsx.length; i < len; i++) {
+          promiseArr.push(await this.returnPromise(i, local))
+        }
+        let res = await Promise.all(promiseArr)
+        for (let i = 0, len = res.length; i < len; i++) {
+          geoArr.push(await this.returnSearchPromise(res[i]))
+        }
+        const result = await ipcRenderer.invoke('exportKml', await Promise.all(geoArr))
+        this.resultSuccess = result.success
+        this.resultErr = result.err
+        this.btnDisable = result ? !result : result
+        this.$message.success('导出完成')
+      } catch (e) {
+        console.log(e)
+        this.$message.error('导出失败,请检查导入文件和导出路径')
+      } finally {
+        this.btnDisable = false
       }
-      let res = await Promise.all(promiseArr)
-      for (let i = 0, len = res.length; i < len; i++) {
-        geoArr.push(await this.returnSearchPromise(res[i]))
-      }
-      const result = await ipcRenderer.invoke('exportKml', await Promise.all(geoArr))
-      this.resultSuccess = result.success
-      this.resultErr = result.err
-      this.btnDisable = result ? !result : result
     },
     returnPromise(index, local) {
       return new Promise((resolve => {
@@ -164,13 +182,13 @@ export default {
             local.search(`${this.xlsx[index].address}`)
             local.setSearchCompleteCallback((result) => {
               resolve({
-                name: this.xlsx[index].name,
+                name: this.xlsx[index].address,
                 filePath: this.xlsx[index].filePath,
                 fileName: this.xlsx[index].fileName,
                 uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
               })
             })
-          }, 100)
+          }, 800)
         } catch (e) {
           console.log(e)
         }
@@ -236,7 +254,7 @@ export default {
   }
 }
 
-::v-deep .el-descriptions-item__label.has-colon::after {
-  content: ''
-}
+//::v-deep .el-descriptions-item__label.has-colon::after {
+//  content: ''
+//}
 </style>
