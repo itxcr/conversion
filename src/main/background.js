@@ -11,7 +11,6 @@ import xlsx from 'xlsx'
 import template from '../framework/mb.json'
 import makeDir from 'make-dir'
 import moment from 'moment'
-import { argv } from 'process'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let exportFilePath = ''
@@ -36,7 +35,6 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
       webSecurity: false,
-      devTools: argv[2] === 'devtool' ? true : false,
     },
   })
 
@@ -48,6 +46,11 @@ async function createWindow() {
     createProtocol('app')
     // Load the index.html when not in development
     await win.loadURL('app://./index.html#main')
+    process.argv.forEach(v => {
+      if (v === '--debugui') {
+        win.webContents.openDevTools()
+      }
+    })
   }
   ipcMain.handle('window.maximize', async () => {
     win.setSkipTaskbar(false)
