@@ -11,6 +11,7 @@ import xlsx from 'xlsx'
 import template from '../framework/mb.json'
 import makeDir from 'make-dir'
 import moment from 'moment'
+import { argv } from 'process'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let exportFilePath = ''
@@ -35,7 +36,7 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
       webSecurity: false,
-      devTools: process.env.NODE_ENV === 'development',
+      devTools: argv[2] === 'devtool' ? true : false,
     },
   })
 
@@ -150,15 +151,17 @@ async function createWindow() {
       })
       success.push(arg[i].name)
     }
-    err = err.map(err => {
-      return {
-        '小区名称': err,
-      }
-    })
-    const sheet = xlsx.utils.json_to_sheet(err)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, sheet, '失败')
-    await xlsx.writeFile(workbook, `${exportFilePath}\\失败-${moment().format('X')}.xlsx`)
+    if (err.length !== 0) {
+      err = err.map(err => {
+        return {
+          '小区名称': err,
+        }
+      })
+      const sheet = xlsx.utils.json_to_sheet(err)
+      const workbook = xlsx.utils.book_new()
+      xlsx.utils.book_append_sheet(workbook, sheet, '失败')
+      await xlsx.writeFile(workbook, `${exportFilePath}\\失败-${moment().format('X')}.xlsx`)
+    }
     return {
       success,
       err,
