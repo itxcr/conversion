@@ -168,13 +168,14 @@ export default {
         this.resultErr = result.err
         this.btnDisable = result ? !result : result
         this.$message.success('导出完成')
-        this.exportPath = ''
-        this.importPath = ''
       } catch (e) {
         console.log(e)
         this.$message.error('导出失败,请检查导入文件和导出路径')
       } finally {
         this.btnDisable = false
+        this.exportPath = ''
+        this.importPath = ''
+        this.xlsx = []
       }
     },
     returnPromise(index, local) {
@@ -190,7 +191,7 @@ export default {
               uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
             })
           })
-          // }, 800)
+          // }, 600)
         } catch (e) {
           console.log(e)
         }
