@@ -168,6 +168,8 @@ export default {
         this.resultErr = result.err
         this.btnDisable = result ? !result : result
         this.$message.success('导出完成')
+        this.exportPath = ''
+        this.importPath = ''
       } catch (e) {
         console.log(e)
         this.$message.error('导出失败,请检查导入文件和导出路径')
@@ -178,17 +180,17 @@ export default {
     returnPromise(index, local) {
       return new Promise((resolve => {
         try {
-          setTimeout(() => {
-            local.search(`${this.xlsx[index].address}`)
-            local.setSearchCompleteCallback((result) => {
-              resolve({
-                name: this.xlsx[index].address,
-                filePath: this.xlsx[index].filePath,
-                fileName: this.xlsx[index].fileName,
-                uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
-              })
+          // setTimeout(() => {
+          local.search(`${this.xlsx[index].address}`)
+          local.setSearchCompleteCallback((result) => {
+            resolve({
+              name: this.xlsx[index].address,
+              filePath: this.xlsx[index].filePath,
+              fileName: this.xlsx[index].fileName,
+              uid: result.getPoi(0) && result.getPoi(0).uid ? result.getPoi(0).uid : '失败',
             })
-          }, 800)
+          })
+          // }, 800)
         } catch (e) {
           console.log(e)
         }
