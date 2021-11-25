@@ -41,17 +41,18 @@ async function createWindow() {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
     await win.loadURL('app://./index.html#main')
-    process.argv.forEach(v => {
-      if (v === '--debugui') {
-        win.webContents.openDevTools()
-      }
-    })
   }
+
+  process.argv.forEach(v => {
+    if (v === '--debugui') {
+      win.webContents.openDevTools()
+    }
+  })
+
   ipcMain.handle('window.maximize', async () => {
     win.setSkipTaskbar(false)
     if (win.isMaximized()) {

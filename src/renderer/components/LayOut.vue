@@ -4,7 +4,7 @@
       <div class='layout-header'>
         <div class='left'>
           <div class='layout-logo'></div>
-          <span>Conversion<br />
+          <span>{{ name }}<br />
             <small>V {{ version }} </small>
           </span>
         </div>
@@ -55,7 +55,8 @@ export default {
   components: {},
   data() {
     return {
-      version: Runtime.version(),
+      name: Runtime.name() || 'ConversionKml',
+      version: Runtime.version() || '0.0.1',
       window_status: 'unmaximize',
       menuActive: '1',
     }
