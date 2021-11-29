@@ -38,6 +38,11 @@ async function createWindow() {
     },
   })
 
+  // 禁止弹出链接
+  win.webContents.on('new-window', (e) => {
+    e.preventDefault()
+  })
+
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
