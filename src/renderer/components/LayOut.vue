@@ -25,13 +25,14 @@
           class='header-menu'
           text-color='#b9b6d3'
           active-text-color='#fff'
+          @select='toBaidu'
         >
-          <router-link to='/main'>
-            <el-menu-item index='1'>
-              <i class='fas fa-map-marked-alt'></i>
-              <span slot='title'>百度地图</span>
-            </el-menu-item>
-          </router-link>
+          <!--          <router-link to='/main'>-->
+          <el-menu-item index='1' :disabled='getExporting'>
+            <i class='fas fa-map-marked-alt'></i>
+            <span slot='title'>百度地图</span>
+          </el-menu-item>
+          <!--          </router-link>-->
 
           <router-link to='/export'>
             <el-menu-item index='2'>
@@ -49,6 +50,7 @@
 <script>
 import { Runtime } from '@framework/runtime'
 import { ipcRenderer } from 'electron'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Layout',
@@ -81,7 +83,15 @@ export default {
     close() {
       ipcRenderer.invoke('window.destroy')
     },
+    toBaidu(e) {
+      if (e === '1' && !this.getExporting) {
+        this.$router.push('main')
+      }
+    },
   },
+  computed: mapState({
+    getExporting: state => state.exporting,
+  }),
 }
 </script>
 

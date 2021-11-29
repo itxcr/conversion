@@ -94,6 +94,7 @@ import UiCard from '@/components/UiCard'
 import { ipcRenderer } from 'electron'
 import axios from 'axios'
 import { Conversion } from '@framework/utils'
+import { mapMutations } from 'vuex'
 
 export default {
   name: 'ExportKml',
@@ -109,6 +110,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      changeExport: 'changeExportState',
+    }),
     async downloadTemplate() {
       try {
         const result = await ipcRenderer.invoke('downloadTemplate')
@@ -151,6 +155,7 @@ export default {
         this.resultErr = []
         this.resultSuccess = []
         this.btnDisable = true
+        this.changeExport({ exporting: true })
         const promiseArr = []
         const geoArr = []
         const local = new BMap.LocalSearch(new BMap.Map(), {
@@ -167,6 +172,7 @@ export default {
         this.resultSuccess = result.success
         this.resultErr = result.err
         this.btnDisable = result ? !result : result
+        this.changeExport({ exporting: false })
         this.$message.success('导出完成')
       } catch (e) {
         console.log(e)
@@ -176,6 +182,7 @@ export default {
         this.exportPath = ''
         this.importPath = ''
         this.xlsx = []
+        this.changeExport({ exporting: false })
       }
     },
     returnPromise(index, local) {
